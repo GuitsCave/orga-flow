@@ -6,7 +6,6 @@
   ![XYFlow](https://img.shields.io/badge/xyflow-%23FF4081.svg?style=flat-square&logo=reactflow&logoColor=white)
   ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=flat-square&logo=vite&logoColor=white)
   ![Tailwind CSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=flat-square&logo=tailwind-css&logoColor=white)
-  ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
   ![Status](https://img.shields.io/badge/sistema-operacional-emerald?style=flat-square)
 
 </div>
@@ -102,11 +101,7 @@ Orga/
 └── package.json         # Scripts e dependências
 ```
 
----
-
 ## 🤖 Créditos e Desenvolvimento
 
-Este projeto foi desenvolvido em colaboração (pair programming) com as inteligências artificiais **Antigravity** (Google DeepMind) e **Claude** (Anthropic).
+Este projeto foi idealizado e desenvolvido por **Luiz Guilherme Batista ([Guitstech](https://github.com/Guitstech))** em colaboração (pair programming) com as inteligências artificiais **Antigravity** (Google DeepMind) e **Claude** (Anthropic).
 
-
----
