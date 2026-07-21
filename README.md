@@ -14,6 +14,23 @@ O **Orga** é uma aplicação web moderna e intuitiva projetada para a criação
 
 ---
 
+## 🌐 Acesso Online
+
+### 👉 **[organograma.guitstech.com.br](https://organograma.guitstech.com.br/)**
+
+> ⚠️ **A demonstração pode sair do ar.** O ambiente é mantido por conta própria e não tem
+> compromisso de disponibilidade — dependendo de quando você acessar, o link pode não estar mais
+> funcionando. Nesse caso, o projeto continua totalmente utilizável rodando localmente: basta
+> seguir a seção [Como Executar o Projeto](#-como-executar-o-projeto).
+
+Não é necessário criar conta nem instalar nada para experimentar. Vale saber que **os dados ficam
+salvos apenas no seu próprio navegador** (`localStorage`) — nada é enviado para servidor algum.
+Isso significa que limpar o cache, trocar de navegador ou usar uma janela anônima faz o
+organograma desaparecer, então use o botão **Exportar** para guardar um arquivo `.json` de backup
+do seu trabalho.
+
+---
+
 ## ✨ Principais Funcionalidades
 
 ### 📊 Visualização e Edição Avançada
