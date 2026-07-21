@@ -103,5 +103,5 @@ Orga/
 
 ## 🤖 Créditos e Desenvolvimento
 
-Este projeto foi idealizado e desenvolvido por **Luiz Guilherme Batista ([Guitstech](https://github.com/Guitstech))** em colaboração (pair programming) com as inteligências artificiais **Antigravity** (Google DeepMind) e **Claude** (Anthropic).
+Este projeto foi idealizado e desenvolvido por **Luiz Guilherme Batista ([Guitstech](https://guitstech.com.br/))** em colaboração (pair programming) com as inteligências artificiais **Antigravity** (Google DeepMind) e **Claude** (Anthropic).
 

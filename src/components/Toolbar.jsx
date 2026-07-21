@@ -121,6 +121,17 @@ export default function Toolbar({
         <div className="flex shrink-0 items-center gap-2 text-brand-900">
           <Network size={22} />
           <span className="text-base font-extrabold tracking-tight">Orga</span>
+          <span className="text-[10px] text-slate-400 font-medium select-none ml-1 self-end mb-0.5 whitespace-nowrap">
+            por{' '}
+            <a
+              href="https://guitstech.com.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-slate-500 hover:text-brand-600 transition-colors"
+            >
+              Guitstech
+            </a>
+          </span>
         </div>
 
         {divisor}
