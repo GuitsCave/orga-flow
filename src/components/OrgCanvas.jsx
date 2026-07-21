@@ -47,6 +47,14 @@ export default function OrgCanvas({
     [nodesPosicionados, onAddSubordinado, empresasPorId, mostrarEtiquetasEmpresa],
   )
 
+  // Assinatura de QUAIS blocos estão na tela. O reenquadre automático depende
+  // dela, e não das posições: reordenar irmãos ou mudar nível reposiciona tudo,
+  // mas não é motivo para jogar fora o zoom e o enquadramento do usuário.
+  const chaveVisiveis = useMemo(
+    () => nodesPosicionados.map((n) => n.id).sort().join('|'),
+    [nodesPosicionados],
+  )
+
   const [nodes, setNodes, onNodesChange] = useNodesState(nodesCalc)
   const [edges, setEdges, onEdgesChange] = useEdgesState(edgesCalc)
   const { fitView } = useReactFlow()
@@ -93,7 +101,7 @@ export default function OrgCanvas({
       const t = setTimeout(() => fitView({ padding: 0.15, duration: 300 }), 50)
       return () => clearTimeout(t)
     }
-  }, [layoutManual, nodesPosicionados, fitView])
+  }, [layoutManual, chaveVisiveis, fitView])
 
   // Fecha o menu de contexto ao clicar em qualquer lugar
   useEffect(() => {
