@@ -104,6 +104,9 @@ Orga/
 
 ---
 
-## 🛡️ Licença
+## 🤖 Créditos e Desenvolvimento
 
-Este projeto está licenciado sob a licença MIT. Consulte o arquivo correspondente para obter mais detalhes.
+Este projeto foi desenvolvido em colaboração (pair programming) com as inteligências artificiais **Antigravity** (Google DeepMind) e **Claude** (Anthropic).
+
+
+---
