@@ -57,6 +57,27 @@ Excluir um cargo **não apaga a subárvore**. Os subordinados são **reatados ao
 (ou viram topo, se ele era o topo). É o comportamento esperado numa reestruturação: some um nível
 intermediário e a equipe sobe.
 
+## Ajustes manuais pelo menu do bloco
+
+Clicar com o botão direito em um bloco abre ações que mexem na estrutura sem passar pelo
+formulário. Todas respeitam as mesmas validações da seção anterior — quando a operação violaria
+uma regra, ela simplesmente não acontece.
+
+| Ação | O que faz | Limite |
+|---|---|---|
+| **Mover para esquerda/direita** | Troca a ordem entre irmãos (mesmo gestor) | Só entre irmãos; não muda gestor nem nível |
+| **Subir/descer o bloco** | Altera o nível só daquele cargo | Não pode alcançar o nível do gestor nem o do subordinado mais alto |
+| **Subir/descer a equipe** | Altera o nível do gestor **e de toda a árvore abaixo** | Ninguém pode ficar abaixo do nível 1; o líder não pode alcançar o gestor dele |
+| **Exibir árvore da equipe** | Filtra pelo gestor daquele ramo | — |
+| **Isolar bloco** | Mostra só aquele cargo e a cadeia até o topo | — |
+
+A ordem entre irmãos é a **ordem da lista de pessoas** — é isso que "mover para a
+esquerda/direita" altera, e é o que o layout automático usa para dispor os filhos.
+
+Mover a equipe inteira preserva as distâncias internas: como todos deslocam o mesmo tanto, nenhuma
+relação entre gestor e subordinado dentro da equipe pode ser violada. Por isso só as bordas
+precisam de validação — o piso do nível 1 e o gestor acima do líder.
+
 ## Vaga em aberto
 
 Marca uma posição que **existe no organograma mas não tem titular**.

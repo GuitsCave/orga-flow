@@ -82,6 +82,26 @@ Espaço em painel estreito é escasso. Regras aplicadas:
   duas colunas iguais.
 - Textos longos com `truncate` ou `line-clamp`, com o conteúdo completo no tooltip.
 
+## Menu de contexto no próprio objeto
+
+Ações que agem sobre **um item específico** ficam no botão direito daquele item, não na barra
+superior: reordenar, isolar, mudar nível. A barra fica só com o que é global.
+
+O critério é o alcance da ação. Jogar tudo na barra obriga a inventar um "item selecionado"
+implícito e faz o usuário mirar longe do objeto que quer mudar.
+
+Duas regras que o menu segue:
+
+- **Itens impossíveis aparecem desabilitados, não somem.** Um menu que muda de tamanho a cada
+  abertura obriga a reprocurar a opção; desabilitado ensina qual é o limite (o primeiro irmão não
+  pode ir mais para a esquerda).
+- **Reposiciona-se para caber na tela** — perto do cursor, mas deslocado quando estouraria a borda
+  direita ou inferior.
+
+> ⚠️ Quando o menu desabilita um botão a partir de uma regra, essa regra passa a existir em dois
+> lugares: no menu e em quem aplica a mudança. Se as duas versões divergirem, o botão fica
+> habilitado e a ação não acontece — falha silenciosa, difícil de perceber.
+
 ## Confirmação de exclusão embutida
 
 Excluir pede confirmação **no próprio lugar** (a linha se expande mostrando a pergunta e o impacto

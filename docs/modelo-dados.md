@@ -81,6 +81,11 @@ para uma chave `orga:backup:<timestamp>` e a interface mostra um aviso com a op�
 backup antes de descartar. Uma regra simples sustenta isso: *o app nunca chama `removeItem` em
 dados do usuário.*
 
+O mesmo backup é feito **antes de uma importação**, que substitui o organograma inteiro. Escolher
+o arquivo errado é fácil e a ação não tem desfazer — sem o backup, um clique apagaria tudo. Vale
+a generalização: *toda ação que substitui o estado por completo passa pelo backup antes*, não só
+as falhas de carregamento.
+
 Ao mudar o formato de verdade: suba `CURRENT_VERSION` **e** adicione o passo correspondente em
 `migrarDados`. Como o número tem fonte única, não há nada para sincronizar.
 
