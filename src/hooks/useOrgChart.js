@@ -20,6 +20,22 @@ function guardarBackup(conteudo) {
   }
 }
 
+/**
+ * Guarda o organograma atual antes de uma ação que o substitui por inteiro
+ * (importação). Mantém a regra de nunca destruir o que o usuário produziu.
+ * Devolve true se havia algo para preservar.
+ */
+export function guardarBackupDoAtual() {
+  try {
+    const atual = localStorage.getItem(STORAGE_KEY)
+    if (!atual) return false
+    guardarBackup(atual)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Chaves de backup existentes, da mais recente para a mais antiga */
 export function listarBackups() {
   try {

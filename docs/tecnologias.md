@@ -12,7 +12,6 @@ Stack usada no Orga, o motivo de cada escolha e as armadilhas encontradas na pr�
 | `@vitejs/plugin-react` | ^4.3.4 | JSX + Fast Refresh |
 | `tailwindcss` + `@tailwindcss/vite` | ^4.0.9 | Estilos utilitários |
 | `@xyflow/react` (React Flow) | ^12.4.4 | Canvas de nós e conexões |
-| `@dagrejs/dagre` | ^1.1.4 | Cálculo de layout hierárquico |
 | `lucide-react` | ^0.474.0 | Ícones |
 
 ```
@@ -99,28 +98,36 @@ Sobre estilos de conexão: `smoothstep` (linhas em 90°) combina com layouts em 
 testamos os três e ficamos no `smoothstep` — as curvas ficavam feias quando os blocos estavam
 próximos ou lado a lado.
 
-## dagre (`@dagrejs/dagre`)
+## Layout próprio (sem biblioteca)
 
-Biblioteca de layout de grafos dirigidos. Recebe nós com largura/altura e arestas, e devolve
-coordenadas.
+O projeto já usou o `@dagrejs/dagre`, mas a dependência foi removida: o layout é calculado à mão
+em `src/lib/layout.js`. Vale registrar o porquê, porque a troca não foi capricho.
+
+Uma biblioteca de layout de grafos posiciona nós nos dois eixos a partir das arestas. Aqui o **Y
+não pode vir do grafo** — ele vem do campo `nivel` do cargo (ver
+[regras-organograma.md](regras-organograma.md)). Sobrescrever o Y devolvido pela biblioteca
+funciona, mas ela não sabe disso e passa a gerar sobreposições que exigem um passe corretivo
+próprio. Ou seja: metade do resultado era descartado e a outra metade precisava de conserto.
+
+A recursão própria é simples e resolve o caso de árvore:
 
 ```js
-const g = new dagre.graphlib.Graph()
-g.setGraph({ rankdir: 'TB', nodesep: 40, ranksep: 70 })
-g.setDefaultEdgeLabel(() => ({}))
-// setNode / setEdge ...
-dagre.layout(g)
-const { x, y } = g.node(id)
+function layoutNode(id) {
+  const filhos = filhosDe.get(id) ?? []
+  if (!filhos.length) return { x: 0, width: NODE_WIDTH, subposicoes: { [id]: 0 } }
+  // empilha os filhos lado a lado, centraliza o pai sobre eles
+  // e devolve as posições relativas de toda a subárvore
+}
 ```
 
-Dois detalhes que economizam tempo:
+Ganhos concretos: **a ordem dos irmãos passa a ser controlável** (é a ordem do array `pessoas`, o
+que permitiu o "mover para a esquerda/direita"), o pacote saiu do bundle e o módulo ficou sem
+dependência externa — dá para testar direto no Node.
 
-- **dagre devolve o centro do nó**, enquanto o React Flow posiciona pelo canto superior esquerdo.
-  É preciso subtrair metade da largura/altura.
-- **Dá para usar só uma das coordenadas.** No Orga o X vem do dagre (que resolve bem a ordenação
-  horizontal e centraliza os pais sobre os filhos), mas o **Y é calculado pelo nível do cargo** —
-  ver [regras-organograma.md](regras-organograma.md). Ao sobrescrever uma coordenada, lembre que o
-  dagre não sabe disso e pode gerar sobreposição: é preciso um passe próprio separando os nós.
+> ⚠️ Layout recursivo **precisa de rede de segurança contra ciclo**. Com um ciclo na hierarquia
+> ninguém é raiz, a recursão não alcança esses nós e eles ficariam sem posição — o React Flow
+> quebra ao receber `position: undefined`. O passe final em `calcularLayout` garante uma posição
+> para todo mundo.
 
 ## lucide-react
 

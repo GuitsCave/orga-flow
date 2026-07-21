@@ -11,6 +11,7 @@ import {
   listarBackups,
   lerBackup,
   descartarBackups,
+  guardarBackupDoAtual,
 } from './hooks/useOrgChart.js'
 import { baixarTexto } from './lib/arquivo.js'
 import { APP_VERSION } from './lib/versao.js'
@@ -49,12 +50,22 @@ export default function App() {
   const [mostrarEtiquetasEmpresa, setMostrarEtiquetasEmpresa] = useState(true)
   const [modalEmpresas, setModalEmpresas] = useState(false)
   // Passo a passo: abre sozinho no primeiro acesso e fica no botão "?"
-  const [tourAberto, setTourAberto] = useState(
-    () => !localStorage.getItem('orga:tour-visto'),
-  )
+  // localStorage pode lançar (modo privado, cookies bloqueados) — nunca deixe
+  // isso derrubar a renderização do app.
+  const [tourAberto, setTourAberto] = useState(() => {
+    try {
+      return !localStorage.getItem('orga:tour-visto')
+    } catch {
+      return false
+    }
+  })
 
   const fecharTour = () => {
-    localStorage.setItem('orga:tour-visto', '1')
+    try {
+      localStorage.setItem('orga:tour-visto', '1')
+    } catch {
+      /* storage indisponível */
+    }
     setTourAberto(false)
   }
 
@@ -139,13 +150,16 @@ export default function App() {
       for (const p of dados.pessoas) {
         const okArea = filtroArea.length === 0 || filtroArea.includes(p.area?.trim())
         const okSetor = filtroSetor.length === 0 || filtroSetor.includes(p.setor?.trim())
-        // Quem não tem empresa marcada herda a do gestor acima
-        const efetivas = empresasEfetivas(p, porId)
-        const okEmpresa =
-          filtroEmpresas.length === 0 ||
-          (efetivas.length === 0
-            ? filtroEmpresas.includes(SEM_EMPRESA)
-            : efetivas.some((id) => filtroEmpresas.includes(id)))
+        // Quem não tem empresa marcada herda a do gestor acima. Só calcula a
+        // herança quando o filtro está ativo — a busca sobe a cadeia inteira.
+        let okEmpresa = true
+        if (filtroEmpresas.length > 0) {
+          const efetivas = empresasEfetivas(p, porId)
+          okEmpresa =
+            efetivas.length === 0
+              ? filtroEmpresas.includes(SEM_EMPRESA)
+              : efetivas.some((id) => filtroEmpresas.includes(id))
+        }
         const okGestor = naArvore === null || naArvore.has(p.id)
         if (okArea && okSetor && okEmpresa && okGestor) {
           let atual = p
@@ -223,6 +237,9 @@ export default function App() {
         pessoaIsolada={pessoaIsolada}
         onLimparPessoaIsolada={() => setPessoaIsolada(null)}
         onImportar={(novos) => {
+          // Importar substitui tudo: preserva o organograma atual antes de trocar
+          guardarBackupDoAtual()
+          setBackups(listarBackups())
           substituirDados(novos)
           setPainel(null)
         }}
@@ -250,8 +267,8 @@ export default function App() {
         <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm">
           <AlertTriangle size={16} className="shrink-0 text-amber-600" />
           <span className="text-amber-900">
-            Encontramos dados salvos que não puderam ser abertos nesta versão. Eles foram
-            preservados — baixe o backup antes de descartar.
+            Há uma cópia de segurança do organograma anterior (de uma importação ou de dados que
+            não puderam ser abertos). Baixe antes de descartar.
           </span>
           <button
             onClick={() => {
@@ -300,11 +317,9 @@ export default function App() {
                   const targetId = (pessoa.ehGestor || !pessoa.gestorId) ? pessoa.id : pessoa.gestorId
                   setFiltroGestores([targetId])
                   setPessoaIsolada(null) // Garante que limpa o isolamento ao exibir equipe
-                  
-                  // Sincroniza o filtro de empresas com a empresa do nó clicado
-                  const porId = new Map(dados.pessoas.map((x) => [x.id, x]))
-                  const efetivas = empresasEfetivas(pessoa, porId)
-                  setFiltroEmpresas(efetivas)
+                  // Limpa o filtro de empresa: mantê-lo esconderia membros da
+                  // própria equipe cuja empresa efetiva difere da do gestor.
+                  setFiltroEmpresas([])
                 }}
                 onIsolarBloco={(id) => {
                   setPessoaIsolada(id)

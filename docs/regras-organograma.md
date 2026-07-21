@@ -132,7 +132,9 @@ parecer organizado por camadas hierárquicas reais.
 
 Detalhes da implementação:
 
-- O **X** vem do dagre (ordena horizontalmente e centraliza os pais sobre os filhos).
+- O **X** vem de uma recursão própria que empilha os filhos lado a lado e centraliza o pai sobre
+  eles; a ordem entre irmãos é a ordem da lista de pessoas, e é o que o "mover para a
+  esquerda/direita" altera.
 - O **Y** vem do nível.
 - **Níveis totalmente vazios não deixam linha em branco** — as linhas são as dos níveis que
   existem, em ordem.

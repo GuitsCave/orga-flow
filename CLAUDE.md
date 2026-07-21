@@ -26,7 +26,7 @@ npm run build     # production build to dist/
 npm run preview   # preview the production build
 ```
 
-There is no test suite and no linter configured. `src/lib/*.js` are plain ESM with no React/DOM dependencies (only `layout.js` pulls in dagre), so they can be imported directly by Node for ad-hoc verification of the pure logic.
+There is no test suite and no linter configured. `src/lib/*.js` are plain ESM with no React/DOM dependencies and no third-party imports, so they can be imported directly by Node for ad-hoc verification of the pure logic.
 
 ## Architecture
 
@@ -50,7 +50,9 @@ There is no test suite and no linter configured. `src/lib/*.js` are plain ESM wi
 
 ### Layout
 
-Auto layout uses `@dagrejs/dagre` for **X only**. Y comes from each person's `nivel`, so everyone at the same level shares a row even when the manager chain skips levels. Rows are keyed by the sorted distinct `nivel` values present, so an entirely absent level collapses instead of leaving a blank row. Because moving nodes onto their level's row can make them collide, a final pass pushes overlapping nodes apart horizontally within each row.
+Auto layout is hand-rolled in `calcularLayout` — there is no layout library. `layoutNode` recurses over the visible tree bottom-up, packing each node's children side by side and centring the parent over them; sibling order follows the order of the `pessoas` array, which is what `reordenarPessoa` manipulates. Roots are laid out left to right, each offset past the previous subtree's width.
+
+That recursion produces **X only**. Y comes from each person's `nivel`, so everyone at the same level shares a row even when the manager chain skips levels. Rows are keyed by the sorted distinct `nivel` values present, so an entirely absent level collapses instead of leaving a blank row. A final pass gives a position to any node the recursion never reached (only possible if the hierarchy contains a cycle), so React Flow never receives `position: undefined`.
 
 Manual mode (`layoutManual: true`) uses each person's saved `posicao` and makes nodes draggable.
 

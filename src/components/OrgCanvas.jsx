@@ -31,23 +31,21 @@ export default function OrgCanvas({
 }) {
   const empresasPorId = useMemo(() => new Map(empresas.map((e) => [e.id, e])), [empresas])
 
-  const { nodes: nodesCalc, edges: edgesCalc } = useMemo(() => {
-    const fluxo = paraFluxo(pessoas, layoutManual, todasPessoas)
-    return {
-      ...fluxo,
-      nodes: fluxo.nodes.map((n) => ({
+  // Posições e ligações: só mudam com os dados/layout. Mantido separado do que
+  // é puramente visual para o reenquadre não disparar a cada troca de etiqueta.
+  const { nodes: nodesPosicionados, edges: edgesCalc } = useMemo(
+    () => paraFluxo(pessoas, layoutManual, todasPessoas),
+    [pessoas, layoutManual, todasPessoas],
+  )
+
+  const nodesCalc = useMemo(
+    () =>
+      nodesPosicionados.map((n) => ({
         ...n,
         data: { ...n.data, onAddSubordinado, empresasPorId, mostrarEtiquetasEmpresa },
       })),
-    }
-  }, [
-    pessoas,
-    layoutManual,
-    todasPessoas,
-    onAddSubordinado,
-    empresasPorId,
-    mostrarEtiquetasEmpresa,
-  ])
+    [nodesPosicionados, onAddSubordinado, empresasPorId, mostrarEtiquetasEmpresa],
+  )
 
   const [nodes, setNodes, onNodesChange] = useNodesState(nodesCalc)
   const [edges, setEdges, onEdgesChange] = useEdgesState(edgesCalc)
@@ -78,15 +76,10 @@ export default function OrgCanvas({
     return true
   }, [pessoaContexto, todasPessoas])
 
-  const podeSubirEquipe = useMemo(() => {
-    if (!pessoaContexto) return false
-    return podeSubirBloco
-  }, [pessoaContexto, podeSubirBloco])
-
-  const podeDescerEquipe = useMemo(() => {
-    if (!pessoaContexto) return false
-    return true
-  }, [pessoaContexto])
+  // Subir a equipe inteira tem a mesma restrição de subir o líder (todos sobem
+  // juntos). Descer nunca esbarra em nada: os subordinados descem junto.
+  const podeSubirEquipe = podeSubirBloco
+  const podeDescerEquipe = Boolean(pessoaContexto)
 
   // Ressincroniza quando os dados ou o modo de layout mudam
   useEffect(() => {
@@ -100,7 +93,7 @@ export default function OrgCanvas({
       const t = setTimeout(() => fitView({ padding: 0.15, duration: 300 }), 50)
       return () => clearTimeout(t)
     }
-  }, [layoutManual, nodesCalc, fitView])
+  }, [layoutManual, nodesPosicionados, fitView])
 
   // Fecha o menu de contexto ao clicar em qualquer lugar
   useEffect(() => {

@@ -7,7 +7,9 @@ export function calcularLayout(pessoas, todasPessoas = []) {
   if (pessoas.length === 0) return {}
 
   const ids = new Set(pessoas.map((p) => p.id))
-  const todasPessoasMap = new Map(todasPessoas.map((p) => [p.id, p]))
+  // As visíveis entram no mapa mesmo que `todasPessoas` não seja informado:
+  // a lista completa só é necessária para achar o gestor visível acima.
+  const todasPessoasMap = new Map([...todasPessoas, ...pessoas].map((p) => [p.id, p]))
 
   // 1. Determinar o pai visível de cada pessoa
   const paiDe = new Map()
@@ -52,7 +54,6 @@ export function calcularLayout(pessoas, todasPessoas = []) {
   // Função recursiva para calcular o layout de um nó
   // Retorna { x, width, subposicoes: { id: x } }
   function layoutNode(nodeId) {
-    const p = todasPessoasMap.get(nodeId)
     const filhos = filhosDe.get(nodeId) || []
 
     if (filhos.length === 0) {
@@ -125,6 +126,15 @@ export function calcularLayout(pessoas, todasPessoas = []) {
     currentOffset += rootLayout.width + NODE_GAP_X
   }
 
+  // Rede de segurança: se a hierarquia tiver um ciclo, ninguém é raiz e a
+  // recursão acima não alcança esses nós. Melhor posicioná-los na linha do
+  // próprio nível do que devolver `undefined` e quebrar o React Flow.
+  for (const p of pessoas) {
+    if (posicoes[p.id]) continue
+    posicoes[p.id] = { x: currentOffset, y: linhaDoNivel[p.nivel] ?? 0 }
+    currentOffset += NODE_WIDTH + NODE_GAP_X
+  }
+
   return posicoes
 }
 
@@ -135,7 +145,9 @@ export function calcularLayout(pessoas, todasPessoas = []) {
 export function paraFluxo(pessoas, layoutManual, todasPessoas = []) {
   const auto = calcularLayout(pessoas, todasPessoas)
   const ids = new Set(pessoas.map((p) => p.id))
-  const todasPessoasMap = new Map(todasPessoas.map((p) => [p.id, p]))
+  // As visíveis entram no mapa mesmo que `todasPessoas` não seja informado:
+  // a lista completa só é necessária para achar o gestor visível acima.
+  const todasPessoasMap = new Map([...todasPessoas, ...pessoas].map((p) => [p.id, p]))
 
   const nodes = pessoas.map((p) => ({
     id: p.id,

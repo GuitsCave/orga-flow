@@ -84,6 +84,17 @@ function posicionarCard(area) {
 
 export default function Tour({ onFechar }) {
   const [indice, setIndice] = useState(0)
+  // Direção da navegação, para o auto-pulo de passos sem alvo seguir o usuário
+  const [sentido, setSentido] = useState('frente')
+
+  const avancar = () => {
+    setSentido('frente')
+    setIndice((i) => Math.min(i + 1, PASSOS.length - 1))
+  }
+  const voltar = () => {
+    setSentido('tras')
+    setIndice((i) => Math.max(i - 1, 0))
+  }
   const [area, setArea] = useState(null)
 
   const passo = PASSOS[indice]
@@ -102,18 +113,24 @@ export default function Tour({ onFechar }) {
     return () => window.removeEventListener('resize', medir)
   }, [passo])
 
-  // Pula passos cujo alvo não existe nesta tela (ex.: filtro ainda sem opções)
+  // Pula passos cujo alvo não existe nesta tela (ex.: filtro ainda sem opções).
+  // Pula no sentido em que o usuário está navegando: avançar sempre empurraria
+  // para frente e tornaria os passos anteriores inalcançáveis pelo "Voltar".
   useEffect(() => {
-    if (passo.alvo && !document.querySelector(`[data-tour="${passo.alvo}"]`)) {
-      if (indice < PASSOS.length - 1) setIndice((i) => i + 1)
+    if (!passo.alvo || document.querySelector(`[data-tour="${passo.alvo}"]`)) return
+    if (sentido === 'tras') {
+      if (indice > 0) setIndice((i) => i - 1)
+      else setSentido('frente') // já no início: segue para frente
+    } else if (indice < PASSOS.length - 1) {
+      setIndice((i) => i + 1)
     }
-  }, [passo, indice])
+  }, [passo, indice, sentido])
 
   useEffect(() => {
     const aoTeclar = (e) => {
       if (e.key === 'Escape') onFechar()
-      if (e.key === 'ArrowRight' && indice < PASSOS.length - 1) setIndice((i) => i + 1)
-      if (e.key === 'ArrowLeft' && indice > 0) setIndice((i) => i - 1)
+      if (e.key === 'ArrowRight' && indice < PASSOS.length - 1) avancar()
+      if (e.key === 'ArrowLeft' && indice > 0) voltar()
     }
     document.addEventListener('keydown', aoTeclar)
     return () => document.removeEventListener('keydown', aoTeclar)
@@ -186,14 +203,14 @@ export default function Tour({ onFechar }) {
           <div className="ml-auto flex items-center gap-2">
             {indice > 0 && (
               <button
-                onClick={() => setIndice((i) => i - 1)}
+                onClick={voltar}
                 className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
               >
                 <ArrowLeft size={14} /> Voltar
               </button>
             )}
             <button
-              onClick={() => (ultimo ? onFechar() : setIndice((i) => i + 1))}
+              onClick={() => (ultimo ? onFechar() : avancar())}
               className="flex items-center gap-1 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
               {ultimo ? (

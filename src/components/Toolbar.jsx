@@ -95,6 +95,7 @@ export default function Toolbar({
     e.target.value = ''
     if (!arquivo) return
     const leitor = new FileReader()
+    leitor.onerror = () => setErroImport('Não foi possível ler o arquivo escolhido.')
     leitor.onload = () => {
       const { dados: novos, erro } = validarImportacao(leitor.result)
       if (erro) {
