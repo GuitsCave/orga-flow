@@ -53,6 +53,16 @@ Two unrelated versions exist; do not conflate them:
 - **`CURRENT_VERSION`** (`modelo.js`) — the **data format**. Only bump it when the shape of `dados` genuinely changes, and add the matching step to `migrarDados`. It is declared in exactly one place and imported by `exemplo.js`, `arquivo.js` and `useOrgChart.js` — **never re-type the literal**. It used to be duplicated across three files, and one of them drifting meant imported files were saved under a version the loader rejected, which silently destroyed data on the next reload.
 - **`APP_VERSION`** (`lib/versao.js`) — the **release**, injected by Vite from `package.json` (`__APP_VERSION__` / `__BUILD_DATE__`, see `vite.config.js`). Purely informational: shown as a badge next to the `?` button, and compared against the `orga:versao-vista` key to show the "app updated" banner. Publishing a new release never touches anyone's data. Note the dev server bakes it at startup — bumping `package.json` needs a `npm run dev` restart to show up.
 
+### Releasing: always bump the version
+
+**Every change that reaches `master` ships with a bump of `version` in `package.json`** — the badge in the header is how the user tells which build is live, and the "app updated" banner only fires when the number actually changes. Do it in the same commit as the change, not afterwards.
+
+- **Patch** (`0.2.0` → `0.2.1`) — bug fixes and internal cleanup: nothing the user has to relearn.
+- **Minor** (`0.2.1` → `0.3.0`) — a new feature, or a behaviour change in something that already existed.
+- Docs-only commits don't need a bump — nothing in `dist/` changes.
+
+This is the **app version only**. Never bump `CURRENT_VERSION` for a release; that one tracks the shape of the saved data and carries migration consequences.
+
 **The hard rule: the app never destroys user data.** Loading runs `migrarDados`, which brings older formats forward (all changes so far have been additive, so the normalizers fill the defaults). It returns `null` only for an unusable payload — invalid shape, or a version newer than this build. In that case, and before an import replaces everything, the raw content is copied to an `orga:backup:<timestamp>` key and `App.jsx` shows an amber banner offering to download it. There is no `removeItem` on user data anywhere in the codebase; keep it that way.
 
 ### Layout
