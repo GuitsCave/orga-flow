@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Fundo com gradiente moderno -->
+  <rect width="32" height="32" rx="8" fill="url(#grad)" />
+  
+  <!-- Conexões (Linhas) -->
+  <path d="M16 10L10 22M16 10L22 22" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+  
+  <!-- Nós da Hierarquia -->
+  <circle cx="16" cy="10" r="3.5" fill="white" stroke="#4f46e5" stroke-width="1.5" />
+  <circle cx="10" cy="22" r="3.5" fill="white" stroke="#4f46e5" stroke-width="1.5" />
+  <circle cx="22" cy="22" r="3.5" fill="white" stroke="#4f46e5" stroke-width="1.5" />
+
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4f46e5" />
+      <stop offset="1" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+</svg>
