@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Copy, X, Users, User, ArrowRight } from 'lucide-react'
+import ModalBase from './ModalBase.jsx'
 
 export default function ModalCopiarBloco({
   onFechar,
@@ -24,8 +25,7 @@ export default function ModalCopiarBloco({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition-all">
+    <ModalBase onFechar={onFechar} larguraMax="max-w-md">
         {/* Cabeçalho */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2 text-brand-900">
@@ -133,7 +133,6 @@ export default function ModalCopiarBloco({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </ModalBase>
   )
 }

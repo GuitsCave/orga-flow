@@ -19,6 +19,7 @@ export default function CenarioSelector({
   onExcluirCenario,
 }) {
   const [aberto, setAberto] = useState(false)
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false)
   const menuRef = useRef(null)
 
   // Fechar menu ao clicar fora
@@ -26,6 +27,7 @@ export default function CenarioSelector({
     function aoClicarFora(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setAberto(false)
+        setConfirmandoExclusao(false)
       }
     }
     document.addEventListener('mousedown', aoClicarFora)
@@ -37,7 +39,10 @@ export default function CenarioSelector({
       {/* Botão Compacto do Seletor */}
       <button
         type="button"
-        onClick={() => setAberto(!aberto)}
+        onClick={() => {
+          setAberto((v) => !v)
+          setConfirmandoExclusao(false)
+        }}
         className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer"
         title={`Alternar Organogramas / Cenários (${cenarios.length} salvos) - Atual: ${cenarioAtivo?.nome || 'Organograma'}`}
       >
@@ -132,25 +137,44 @@ export default function CenarioSelector({
               <span>Renomear Organograma</span>
             </button>
 
-            {cenarios.length > 1 && (
+            {cenarios.length > 1 && !confirmandoExclusao && (
               <button
                 type="button"
-                onClick={() => {
-                  setAberto(false)
-                  if (
-                    confirm(
-                      `Excluir o organograma "${cenarioAtivo.nome}" (${cenarioAtivo.dados?.pessoas?.length || 0} cargos)?` +
-                        `\n\nUma cópia de segurança é guardada e pode ser recuperada na faixa que aparece no topo.`,
-                    )
-                  ) {
-                    onExcluirCenario(cenarioAtivo.id)
-                  }
-                }}
+                onClick={() => setConfirmandoExclusao(true)}
                 className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
                 <span>Excluir este Organograma</span>
               </button>
+            )}
+
+            {cenarios.length > 1 && confirmandoExclusao && (
+              <div className="mt-1 rounded-xl bg-red-50 px-2.5 py-2">
+                <p className="text-[11px] font-medium text-red-700">
+                  Excluir “{cenarioAtivo.nome}” ({cenarioAtivo.dados?.pessoas?.length || 0} cargos)?
+                  Uma cópia fica recuperável na faixa do topo.
+                </p>
+                <div className="mt-2 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmandoExclusao(false)}
+                    className="rounded-md px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-white"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmandoExclusao(false)
+                      setAberto(false)
+                      onExcluirCenario(cenarioAtivo.id)
+                    }}
+                    className="rounded-md bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

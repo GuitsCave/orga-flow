@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Copy, Plus, X, Layers, CheckSquare, Square } from 'lucide-react'
 import { comDescendentes } from '../lib/modelo.js'
+import ModalBase from './ModalBase.jsx'
 
 export default function ModalCenario({
   onFechar,
@@ -78,8 +79,7 @@ export default function ModalCenario({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl transition-all">
+    <ModalBase onFechar={onFechar} larguraMax="max-w-lg">
         {/* Cabeçalho */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2 text-brand-900">
@@ -251,7 +251,6 @@ export default function ModalCenario({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </ModalBase>
   )
 }

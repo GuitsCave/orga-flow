@@ -24,6 +24,7 @@ export default function TabelaView({
   const [busca, setBusca] = useState('')
   const [ordemCampo, setOrdemCampo] = useState('nivel') // 'nome' | 'cargo' | 'nivel' | 'area'
   const [ordemDirecao, setOrdemDirecao] = useState('asc') // 'asc' | 'desc'
+  const [confirmandoId, setConfirmandoId] = useState(null) // exclusão embutida
 
   const empresasPorId = useMemo(
     () => new Map(empresas.map((e) => [e.id, e])),
@@ -307,37 +308,57 @@ export default function TabelaView({
 
                     {/* Ações */}
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => onAddSubordinado(p.id)}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors"
-                          title="Adicionar Subordinado a este cargo"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => onSelecionar(p.id)}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-                          title="Editar cargo"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const nSub = todasPessoas.filter((s) => s.gestorId === p.id).length
-                            const aviso = nSub
-                              ? `\n\n${nSub} subordinado(s) serão reatados ao gestor acima (não são excluídos).`
-                              : ''
-                            if (confirm(`Excluir "${p.nome || p.cargo}"?${aviso}`)) {
-                              onExcluir(p.id)
-                            }
-                          }}
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
-                          title="Excluir cargo"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                      {confirmandoId === p.id ? (
+                        (() => {
+                          const nSub = todasPessoas.filter((s) => s.gestorId === p.id).length
+                          return (
+                            <div className="flex items-center justify-end gap-2">
+                              <span className="text-[10px] font-medium text-red-600">
+                                Excluir?{nSub ? ` ${nSub} subord. serão reatados` : ''}
+                              </span>
+                              <button
+                                onClick={() => setConfirmandoId(null)}
+                                className="rounded-md px-2 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                onClick={() => {
+                                  onExcluir(p.id)
+                                  setConfirmandoId(null)
+                                }}
+                                className="rounded-md bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700"
+                              >
+                                Excluir
+                              </button>
+                            </div>
+                          )
+                        })()
+                      ) : (
+                        <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => onAddSubordinado(p.id)}
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+                            title="Adicionar Subordinado a este cargo"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => onSelecionar(p.id)}
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                            title="Editar cargo"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setConfirmandoId(p.id)}
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            title="Excluir cargo"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )

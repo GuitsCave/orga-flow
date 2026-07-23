@@ -22,6 +22,7 @@ export default function CartoesView({
 }) {
   const [busca, setBusca] = useState('')
   const [secoesAbertas, setSecoesAbertas] = useState({})
+  const [confirmandoId, setConfirmandoId] = useState(null) // exclusão embutida
 
   const empresasPorId = useMemo(
     () => new Map(empresas.map((e) => [e.id, e])),
@@ -198,54 +199,77 @@ export default function CartoesView({
                           </div>
 
                           {/* Ações */}
-                          <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 mt-auto">
-                            <div className="flex flex-wrap gap-1 max-w-[60%]">
-                              {(() => {
-                                const empresaIdsSet = new Set(p.empresaIds || [])
-                                const empresasDaPessoa = empresas.filter((e) => empresaIdsSet.has(e.id))
-                                return empresasDaPessoa.map((emp) => (
-                                  <span
-                                    key={emp.id}
-                                    className="h-2 w-2 rounded-full shadow-2xs"
-                                    style={{ backgroundColor: emp.cor }}
-                                    title={emp.nome}
-                                  />
-                                ))
-                              })()}
-                            </div>
+                          {confirmandoId === p.id ? (
+                            (() => {
+                              const nSub = todasPessoas.filter((s) => s.gestorId === p.id).length
+                              return (
+                                <div className="border-t border-slate-100 pt-2.5 mt-auto">
+                                  <p className="text-[10px] font-medium text-red-600 mb-1.5">
+                                    Excluir este cargo?
+                                    {nSub ? ` ${nSub} subordinado(s) serão reatados ao gestor acima.` : ''}
+                                  </p>
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => setConfirmandoId(null)}
+                                      className="rounded-md px-2 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100"
+                                    >
+                                      Cancelar
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        onExcluir(p.id)
+                                        setConfirmandoId(null)
+                                      }}
+                                      className="rounded-md bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700"
+                                    >
+                                      Excluir
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })()
+                          ) : (
+                            <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 mt-auto">
+                              <div className="flex flex-wrap gap-1 max-w-[60%]">
+                                {(() => {
+                                  const empresaIdsSet = new Set(p.empresaIds || [])
+                                  const empresasDaPessoa = empresas.filter((e) => empresaIdsSet.has(e.id))
+                                  return empresasDaPessoa.map((emp) => (
+                                    <span
+                                      key={emp.id}
+                                      className="h-2 w-2 rounded-full shadow-2xs"
+                                      style={{ backgroundColor: emp.cor }}
+                                      title={emp.nome}
+                                    />
+                                  ))
+                                })()}
+                              </div>
 
-                            <div className="flex items-center gap-0.5">
-                              <button
-                                onClick={() => onAddSubordinado(p.id)}
-                                className="rounded-md p-1.5 text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
-                                title="Adicionar Subordinado"
-                              >
-                                <UserPlus className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={() => onSelecionar(p.id)}
-                                className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                                title="Editar"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const nSub = todasPessoas.filter((s) => s.gestorId === p.id).length
-                                  const aviso = nSub
-                                    ? `\n\n${nSub} subordinado(s) serão reatados ao gestor acima (não são excluídos).`
-                                    : ''
-                                  if (confirm(`Excluir "${p.nome || p.cargo}"?${aviso}`)) {
-                                    onExcluir(p.id)
-                                  }
-                                }}
-                                className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                                title="Excluir"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                              <div className="flex items-center gap-0.5">
+                                <button
+                                  onClick={() => onAddSubordinado(p.id)}
+                                  className="rounded-md p-1.5 text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+                                  title="Adicionar Subordinado"
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => onSelecionar(p.id)}
+                                  className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                                  title="Editar"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setConfirmandoId(p.id)}
+                                  className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  title="Excluir"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       )
                     })}
