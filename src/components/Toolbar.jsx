@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   Table,
   Tag,
+  VenetianMask,
   X,
 } from 'lucide-react'
 import { SEM_EMPRESA } from '../lib/modelo.js'
@@ -86,6 +87,8 @@ export default function Toolbar({
   onChangeModoVisao = () => {},
   onAbrirPaleta,
   onToggleFoco,
+  modoConfidencial = false,
+  onToggleConfidencial,
   onAbrirMenu,
 }) {
   const [editandoEmpresa, setEditandoEmpresa] = useState(false)
@@ -260,6 +263,23 @@ export default function Toolbar({
             aria-label="Entrar no modo foco"
           >
             <Maximize2 size={18} />
+          </button>
+
+          <button
+            onClick={onToggleConfidencial}
+            className={`rounded-lg p-2 transition-colors ${
+              modoConfidencial
+                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+            }`}
+            title={
+              modoConfidencial
+                ? 'Modo confidencial ativo: nomes ocultos — clique para mostrar'
+                : 'Modo confidencial: oculta os nomes para reuniões com terceiros'
+            }
+            aria-label={modoConfidencial ? 'Mostrar nomes reais' : 'Ativar modo confidencial'}
+          >
+            <VenetianMask size={18} />
           </button>
 
           <button

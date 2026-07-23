@@ -72,6 +72,9 @@ export default function App() {
   const [drawerAberto, setDrawerAberto] = useState(false)
   // Modo foco/apresentação: esconde toda a interface, só o canvas fica
   const [modoFoco, setModoFoco] = useState(false)
+  // Modo confidencial: mascara nomes para reuniões com terceiros. View-only,
+  // nunca persiste nem exporta — como os filtros.
+  const [modoConfidencial, setModoConfidencial] = useState(false)
   // Passo a passo: abre sozinho no primeiro acesso e fica no botão "?"
   // localStorage pode lançar (modo privado, cookies bloqueados) — nunca deixe
   // isso derrubar a renderização do app.
@@ -222,10 +225,31 @@ export default function App() {
     [dados.pessoas],
   )
 
+  // Modo confidencial: rótulo estável por pessoa ("Colaborador N"), calculado a
+  // partir da lista COMPLETA (não da filtrada) para que o mesmo cargo tenha
+  // sempre o mesmo número em qualquer visão. A ordenação usa só nivel + id —
+  // nunca o nome — para o rótulo não vazar nenhuma pista da identidade real.
+  const rotuloAnonimoPorId = useMemo(() => {
+    const mapa = new Map()
+    let contador = 0
+    const ordenados = [...dados.pessoas]
+      .filter((p) => !p.vagaAberta)
+      .sort((a, b) => a.nivel - b.nivel || a.id.localeCompare(b.id))
+    for (const p of ordenados) {
+      contador += 1
+      mapa.set(p.id, `Colaborador ${contador}`)
+    }
+    return mapa
+  }, [dados.pessoas])
+
+  const mascararSeConfidencial = (p) =>
+    modoConfidencial && !p.vagaAberta ? { ...p, nome: rotuloAnonimoPorId.get(p.id) } : p
+
   const rotuloPessoa = (id) => {
     const p = dados.pessoas.find((x) => x.id === id)
     if (!p) return id
-    return p.nome || `Vaga: ${p.cargo}`
+    if (!p.nome) return `Vaga: ${p.cargo}`
+    return modoConfidencial ? rotuloAnonimoPorId.get(id) : p.nome
   }
 
   const pessoasVisiveis = useMemo(() => {
@@ -281,6 +305,18 @@ export default function App() {
     }
     return base
   }, [dados.pessoas, filtroArea, filtroSetor, filtroNiveis, filtroEmpresas, filtroGestores, pessoaIsolada])
+
+  // Listas prontas para exibição (canvas/tabela/cartões/paleta): com o modo
+  // confidencial ativo, o nome é trocado pelo rótulo anônimo. A edição
+  // (PessoaForm, pessoaSelecionada) continua usando dados.pessoas sem máscara.
+  const todasPessoasExibicao = useMemo(
+    () => (modoConfidencial ? dados.pessoas.map(mascararSeConfidencial) : dados.pessoas),
+    [dados.pessoas, modoConfidencial, rotuloAnonimoPorId],
+  )
+  const pessoasVisiveisExibicao = useMemo(
+    () => (modoConfidencial ? pessoasVisiveis.map(mascararSeConfidencial) : pessoasVisiveis),
+    [pessoasVisiveis, modoConfidencial, rotuloAnonimoPorId],
+  )
 
   const filtrosAtivos =
     filtroArea.length +
@@ -361,6 +397,8 @@ export default function App() {
         onChangeModoVisao={setModoVisao}
         onAbrirPaleta={() => setPaletaAberta(true)}
         onToggleFoco={() => setModoFoco((v) => !v)}
+        modoConfidencial={modoConfidencial}
+        onToggleConfidencial={() => setModoConfidencial((v) => !v)}
         onAbrirMenu={() => setDrawerAberto(true)}
       />
       )}
@@ -422,8 +460,8 @@ export default function App() {
             </div>
           ) : modoVisao === 'tabela' ? (
             <TabelaView
-              pessoas={pessoasVisiveis}
-              todasPessoas={dados.pessoas}
+              pessoas={pessoasVisiveisExibicao}
+              todasPessoas={todasPessoasExibicao}
               empresas={dados.empresas ?? []}
               onSelecionar={(id) => setPainel(id)}
               onExcluir={excluirPessoa}
@@ -432,8 +470,8 @@ export default function App() {
             />
           ) : modoVisao === 'cartoes' ? (
             <CartoesView
-              pessoas={pessoasVisiveis}
-              todasPessoas={dados.pessoas}
+              pessoas={pessoasVisiveisExibicao}
+              todasPessoas={todasPessoasExibicao}
               empresas={dados.empresas ?? []}
               onSelecionar={(id) => setPainel(id)}
               onExcluir={excluirPessoa}
@@ -442,8 +480,8 @@ export default function App() {
           ) : (
             <ReactFlowProvider>
               <OrgCanvas
-                pessoas={pessoasVisiveis}
-                todasPessoas={dados.pessoas}
+                pessoas={pessoasVisiveisExibicao}
+                todasPessoas={todasPessoasExibicao}
                 empresas={dados.empresas ?? []}
                 mostrarEtiquetasEmpresa={mostrarEtiquetasEmpresa}
                 layoutManual={dados.layoutManual}
@@ -517,12 +555,13 @@ export default function App() {
 
       {paletaAberta && (
         <CommandPalette
-          pessoas={dados.pessoas}
+          pessoas={todasPessoasExibicao}
           cenarios={cenarios}
           cenarioAtivoId={cenarioAtivoId}
           modoVisao={modoVisao}
           layoutManual={dados.layoutManual}
           modoFoco={modoFoco}
+          modoConfidencial={modoConfidencial}
           onIrParaPessoa={(id) => {
             setPessoaIsolada(id)
             setFiltroGestores([])
@@ -538,6 +577,7 @@ export default function App() {
           onChangeModoVisao={setModoVisao}
           onToggleManual={() => setLayoutManual(!dados.layoutManual)}
           onToggleFoco={() => setModoFoco((v) => !v)}
+          onToggleConfidencial={() => setModoConfidencial((v) => !v)}
           onAbrirTour={() => setTourAberto(true)}
           onFechar={() => setPaletaAberta(false)}
         />

@@ -128,19 +128,58 @@ saíram do header.
   - Fecha no `Esc`, no clique fora, e depois de abrir outra tela.
 - **Notas:** ver item 3 — foram entregues na mesma mudança.
 
-### 5. Modo Confidencial (Anonimizador) — ⬜ PENDENTE
+### 5. Modo Confidencial (Anonimizador) — ✅ FEITO
 
 Mascara nomes sensíveis em 1 clique (reuniões com terceiros/consultores).
 
 - **Por que subimos a prioridade:** é feature de venda, não "complementar" —
   muitas empresas não mostram o org real para fora.
-- **Escopo:**
-  - Toggle que substitui nomes por iniciais/rótulos genéricos (ex.: "Colaborador",
-    cargo mantido). **View-only, nunca persiste nem exporta** — como os filtros.
-  - Vale em canvas, tabela e cartões.
-- **Arquivos prováveis:** `App.jsx` (flag view-only), `PessoaNode.jsx`,
-  `TabelaView.jsx`, `CartoesView.jsx`.
-- **Notas:** _(preencher ao executar)_
+- **Escopo entregue:**
+  - Toggle `modoConfidencial` em `App.jsx` que troca `nome` por um rótulo
+    estável **"Colaborador N"** (cargo, nível, área, setor e empresas continuam
+    visíveis). Vagas em aberto não são afetadas — já não expõem nome.
+  - A numeração é calculada a partir da lista **completa** (não da filtrada) e
+    ordenada só por `nivel` + `id` — nunca pelo nome, pra não vazar pista
+    nenhuma — então o mesmo cargo tem sempre o mesmo número em qualquer visão.
+  - **View-only, nunca persiste nem exporta** — como os filtros (confirmado: o
+    localStorage continua com os nomes reais depois de ativar/desativar).
+  - Vale em canvas, tabela, cartões, na paleta de comandos (busca de pessoa) e
+    no filtro/chip "Gestor" e "Foco: X" da faixa de filtros — cobertura mais
+    ampla que a prevista, porque a paleta e o header (itens 1 e 3) só existem
+    desde os últimos itens do plano, e deixá-los de fora vazaria nomes reais
+    durante a própria apresentação que o modo existe para proteger.
+  - **Edição nunca é mascarada**: o painel de editar pessoa (`PessoaForm`)
+    sempre mostra o nome e o gestor reais — a máscara é só para quem está
+    olhando, não para quem está editando.
+  - Gatilhos: botão no dock (`VenetianMask`, entre Foco e Menu, destaca em
+    âmbar quando ativo) e ação na paleta (`Ctrl+K` → "confidencial"), seguindo
+    o mesmo padrão dos itens 1 e 2.
+- **Descoberta:** **não precisou mexer** em `PessoaNode.jsx`, `TabelaView.jsx`
+  nem `CartoesView.jsx` (diferente do previsto) — todos só renderizam o `nome`
+  que recebem via props, então mascarar as listas uma vez em `App.jsx`
+  (`todasPessoasExibicao`/`pessoasVisiveisExibicao`) bastou para cobrir as três
+  visões, incluindo o efeito colateral bem-vindo de mascarar também as iniciais
+  do avatar (Tabela/Cartões) e o texto do botão "+" ("Adicionar subordinado a
+  Colaborador N") no canvas.
+- **Bug pego na verificação:** a primeira versão da ação na paleta não continha
+  a palavra "confidencial" no texto buscável (só no `chave` interno) — buscar
+  "confid" não encontrava nada. Corrigido incluindo a palavra no rótulo nos
+  dois estados ("Ativar/Sair do modo confidencial").
+- **Arquivos:** `App.jsx` (estado, mapa de rótulos, listas mascaradas),
+  `Toolbar.jsx` (botão no dock), `CommandPalette.jsx` (ação de alternância).
+- **Notas:** verificado no browser nos três estados (ligado/desligado, dock e
+  paleta), numeração estável entre canvas/tabela/cartões, edição com dado real,
+  e o localStorage confirmado intacto após os testes. Build limpo.
+  Versão → **0.7.0**.
+
+---
+
+## Plano concluído
+
+Os cinco itens do redesign "Zen Canvas" estão feitos: Command Palette, Modo
+Foco, Header Dock + Side Drawer, e Modo Confidencial. Os itens adiados
+(avatares, reconsiderar export PDF/PNG) seguem em
+[ideias-futuras.md](ideias-futuras.md) para quando fizer sentido retomar.
 
 ---
 

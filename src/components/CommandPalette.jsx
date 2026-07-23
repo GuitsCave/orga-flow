@@ -15,6 +15,7 @@ import {
   CornerDownLeft,
   User,
   UserX,
+  VenetianMask,
 } from 'lucide-react'
 
 /** Ignora acentos e maiúsculas para a busca ("joao" acha "João") */
@@ -37,6 +38,7 @@ export default function CommandPalette({
   modoVisao,
   layoutManual,
   modoFoco,
+  modoConfidencial,
   onIrParaPessoa,
   onNovaPessoa,
   onAbrirEmpresas,
@@ -45,6 +47,7 @@ export default function CommandPalette({
   onChangeModoVisao,
   onToggleManual,
   onToggleFoco,
+  onToggleConfidencial,
   onAbrirTour,
 }) {
   const [busca, setBusca] = useState('')
@@ -89,6 +92,15 @@ export default function CommandPalette({
         dica: 'Apresentação — só o canvas (tecla F)',
         icone: modoFoco ? Minimize2 : Maximize2,
         run: onToggleFoco,
+      },
+      {
+        chave: 'confidencial',
+        rotulo: modoConfidencial ? 'Sair do modo confidencial' : 'Ativar modo confidencial',
+        dica: modoConfidencial
+          ? 'Volta a mostrar os nomes reais'
+          : 'Oculta os nomes para reuniões com terceiros',
+        icone: VenetianMask,
+        run: onToggleConfidencial,
       },
       {
         chave: 'empresas',
@@ -138,12 +150,14 @@ export default function CommandPalette({
     modoVisao,
     layoutManual,
     modoFoco,
+    modoConfidencial,
     onNovaPessoa,
     onChangeModoVisao,
     onAbrirEmpresas,
     onAbrirNovoCenario,
     onToggleManual,
     onToggleFoco,
+    onToggleConfidencial,
     onAbrirTour,
     onSelecionarCenario,
   ])
