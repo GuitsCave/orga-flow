@@ -9,6 +9,8 @@ import {
   Table2,
   IdCard,
   HelpCircle,
+  Maximize2,
+  Minimize2,
   Move,
   CornerDownLeft,
   User,
@@ -34,6 +36,7 @@ export default function CommandPalette({
   cenarioAtivoId,
   modoVisao,
   layoutManual,
+  modoFoco,
   onIrParaPessoa,
   onNovaPessoa,
   onAbrirEmpresas,
@@ -41,6 +44,7 @@ export default function CommandPalette({
   onSelecionarCenario,
   onChangeModoVisao,
   onToggleManual,
+  onToggleFoco,
   onAbrirTour,
 }) {
   const [busca, setBusca] = useState('')
@@ -78,6 +82,13 @@ export default function CommandPalette({
         dica: 'Agrupado por área',
         icone: IdCard,
         run: () => onChangeModoVisao('cartoes'),
+      },
+      {
+        chave: 'foco',
+        rotulo: modoFoco ? 'Sair do modo foco' : 'Entrar no modo foco',
+        dica: 'Apresentação — só o canvas (tecla F)',
+        icone: modoFoco ? Minimize2 : Maximize2,
+        run: onToggleFoco,
       },
       {
         chave: 'empresas',
@@ -126,11 +137,13 @@ export default function CommandPalette({
     cenarioAtivoId,
     modoVisao,
     layoutManual,
+    modoFoco,
     onNovaPessoa,
     onChangeModoVisao,
     onAbrirEmpresas,
     onAbrirNovoCenario,
     onToggleManual,
+    onToggleFoco,
     onAbrirTour,
     onSelecionarCenario,
   ])

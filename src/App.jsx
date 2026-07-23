@@ -505,6 +505,7 @@ export default function App() {
           cenarioAtivoId={cenarioAtivoId}
           modoVisao={modoVisao}
           layoutManual={dados.layoutManual}
+          modoFoco={modoFoco}
           onIrParaPessoa={(id) => {
             setPessoaIsolada(id)
             setFiltroGestores([])
@@ -519,6 +520,7 @@ export default function App() {
           onSelecionarCenario={selecionarCenario}
           onChangeModoVisao={setModoVisao}
           onToggleManual={() => setLayoutManual(!dados.layoutManual)}
+          onToggleFoco={() => setModoFoco((v) => !v)}
           onAbrirTour={() => setTourAberto(true)}
           onFechar={() => setPaletaAberta(false)}
         />

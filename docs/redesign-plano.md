@@ -75,10 +75,13 @@ Oculta 100% da interface e deixa só o canvas interativo — para reuniões.
 - **Arquivos:** `App.jsx` (estado `modoFoco`, listeners de teclado e de tela
   cheia, render condicional da Toolbar/banners, botão flutuante de saída).
 - **Notas:**
-  - **Descoberta (gatilho visível):** igual à paleta, sem botão de *entrada* na UI
-    — só o atalho `F`. Adiado para o item 3 (header). Já anotado no escopo dele.
-  - Verificado no browser: `F` entra/sai, botão de saída funciona, e o guard
-    impede o toggle ao digitar. Build limpo. Versão → **0.5.0**.
+  - **Descoberta:** além do atalho `F`, o modo foco também é acionável pela
+    **paleta de comandos** (`Ctrl+K` → "foco") — o rótulo alterna entre
+    "Entrar/Sair" conforme o estado (adicionado na v0.5.1). Falta só um botão
+    *dedicado* na UI, que entra no item 3 (header).
+  - Verificado no browser: `F` entra/sai, botão de saída funciona, o guard impede
+    o toggle ao digitar, e a paleta expõe/alterna a ação. Build limpo.
+    Versões → **0.5.0** (modo foco) + **0.5.1** (ação na paleta).
 
 ### 3. Header Flutuante (Top Dock) + Pílula de Visão — ⬜ PENDENTE
 
