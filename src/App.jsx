@@ -10,6 +10,7 @@ import ModalCenario from './components/ModalCenario.jsx'
 import ModalCopiarBloco from './components/ModalCopiarBloco.jsx'
 import TabelaView from './components/TabelaView.jsx'
 import CartoesView from './components/CartoesView.jsx'
+import CommandPalette from './components/CommandPalette.jsx'
 import {
   useOrgChart,
   listarBackups,
@@ -66,6 +67,7 @@ export default function App() {
   const [filtroGestores, setFiltroGestores] = useState([])
   const [mostrarEtiquetasEmpresa, setMostrarEtiquetasEmpresa] = useState(true)
   const [modalEmpresas, setModalEmpresas] = useState(false)
+  const [paletaAberta, setPaletaAberta] = useState(false)
   // Passo a passo: abre sozinho no primeiro acesso e fica no botão "?"
   // localStorage pode lançar (modo privado, cookies bloqueados) — nunca deixe
   // isso derrubar a renderização do app.
@@ -114,6 +116,18 @@ export default function App() {
     } catch {
       /* storage indisponível */
     }
+  }, [])
+
+  // Ctrl/Cmd + K abre (ou fecha) a paleta de comandos de qualquer lugar
+  useEffect(() => {
+    const aoTeclar = (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault()
+        setPaletaAberta((v) => !v)
+      }
+    }
+    document.addEventListener('keydown', aoTeclar)
+    return () => document.removeEventListener('keydown', aoTeclar)
   }, [])
 
   // Ao alternar entre organogramas/cenários, limpa os filtros ativos e painéis
@@ -415,6 +429,32 @@ export default function App() {
           />
         )}
       </div>
+
+      {paletaAberta && (
+        <CommandPalette
+          pessoas={dados.pessoas}
+          cenarios={cenarios}
+          cenarioAtivoId={cenarioAtivoId}
+          modoVisao={modoVisao}
+          layoutManual={dados.layoutManual}
+          onIrParaPessoa={(id) => {
+            setPessoaIsolada(id)
+            setFiltroGestores([])
+            setModoVisao('canvas')
+          }}
+          onNovaPessoa={() => {
+            setGestorPreset(null)
+            setPainel('nova')
+          }}
+          onAbrirEmpresas={() => setModalEmpresas(true)}
+          onAbrirNovoCenario={() => setModalCenario({ aberto: true, modo: 'novo', cenario: null })}
+          onSelecionarCenario={selecionarCenario}
+          onChangeModoVisao={setModoVisao}
+          onToggleManual={() => setLayoutManual(!dados.layoutManual)}
+          onAbrirTour={() => setTourAberto(true)}
+          onFechar={() => setPaletaAberta(false)}
+        />
+      )}
 
       {tourAberto && <Tour onFechar={fecharTour} />}
 
