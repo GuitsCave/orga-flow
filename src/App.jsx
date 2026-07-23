@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReactFlowProvider } from '@xyflow/react'
-import { AlertTriangle, CheckCircle2, Users, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Minimize2, Users, X } from 'lucide-react'
 import Toolbar from './components/Toolbar.jsx'
 import OrgCanvas from './components/OrgCanvas.jsx'
 import PessoaForm from './components/PessoaForm.jsx'
@@ -68,6 +68,8 @@ export default function App() {
   const [mostrarEtiquetasEmpresa, setMostrarEtiquetasEmpresa] = useState(true)
   const [modalEmpresas, setModalEmpresas] = useState(false)
   const [paletaAberta, setPaletaAberta] = useState(false)
+  // Modo foco/apresentação: esconde toda a interface, só o canvas fica
+  const [modoFoco, setModoFoco] = useState(false)
   // Passo a passo: abre sozinho no primeiro acesso e fica no botão "?"
   // localStorage pode lançar (modo privado, cookies bloqueados) — nunca deixe
   // isso derrubar a renderização do app.
@@ -128,6 +130,56 @@ export default function App() {
     }
     document.addEventListener('keydown', aoTeclar)
     return () => document.removeEventListener('keydown', aoTeclar)
+  }, [])
+
+  // Tecla F alterna o modo foco; Esc sai dele. Ignora enquanto o usuário digita
+  // num campo (senão "f" num nome ativaria o modo) e com modificadores.
+  useEffect(() => {
+    const aoTeclar = (e) => {
+      const alvo = e.target
+      const digitando =
+        alvo &&
+        (alvo.tagName === 'INPUT' ||
+          alvo.tagName === 'TEXTAREA' ||
+          alvo.isContentEditable)
+      if (
+        !digitando &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        (e.key === 'f' || e.key === 'F')
+      ) {
+        e.preventDefault()
+        setModoFoco((v) => !v)
+      } else if (e.key === 'Escape' && modoFoco) {
+        setModoFoco(false)
+      }
+    }
+    document.addEventListener('keydown', aoTeclar)
+    return () => document.removeEventListener('keydown', aoTeclar)
+  }, [modoFoco])
+
+  // Espelha o modo foco na tela cheia real do navegador (best-effort: se o
+  // navegador bloquear, o modo ainda esconde a interface do app).
+  useEffect(() => {
+    try {
+      if (modoFoco && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.()
+      } else if (!modoFoco && document.fullscreenElement) {
+        document.exitFullscreen?.()
+      }
+    } catch {
+      /* tela cheia indisponível */
+    }
+  }, [modoFoco])
+
+  // Sair da tela cheia pelo próprio navegador (Esc/F11) também sai do modo foco
+  useEffect(() => {
+    const aoMudarTela = () => {
+      if (!document.fullscreenElement) setModoFoco(false)
+    }
+    document.addEventListener('fullscreenchange', aoMudarTela)
+    return () => document.removeEventListener('fullscreenchange', aoMudarTela)
   }, [])
 
   // Ao alternar entre organogramas/cenários, limpa os filtros ativos e painéis
@@ -253,6 +305,7 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col bg-slate-50">
+      {!modoFoco && (
       <Toolbar
         dados={dados}
         onEmpresa={setEmpresa}
@@ -308,8 +361,9 @@ export default function App() {
           setPainel(null)
         }}
       />
+      )}
 
-      {versaoAnterior && (
+      {!modoFoco && versaoAnterior && (
         <div className="flex items-center gap-3 border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-sm">
           <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
           <span className="text-emerald-900">
@@ -327,7 +381,7 @@ export default function App() {
         </div>
       )}
 
-      {backups.length > 0 && (
+      {!modoFoco && backups.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm">
           <AlertTriangle size={16} className="shrink-0 text-amber-600" />
           <span className="text-amber-900">
@@ -429,6 +483,20 @@ export default function App() {
           />
         )}
       </div>
+
+      {modoFoco && (
+        <button
+          onClick={() => setModoFoco(false)}
+          title="Sair do modo foco (Esc)"
+          className="fixed right-4 top-4 z-50 flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-500 opacity-40 shadow-lg backdrop-blur-sm transition-opacity hover:opacity-100"
+        >
+          <Minimize2 className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Sair do foco</span>
+          <kbd className="rounded border border-slate-200 bg-slate-50 px-1 text-[10px] font-semibold text-slate-400">
+            Esc
+          </kbd>
+        </button>
+      )}
 
       {paletaAberta && (
         <CommandPalette

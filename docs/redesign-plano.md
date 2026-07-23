@@ -57,19 +57,28 @@ Menu de comando central para buscar colaborador/cargo e disparar ações sem mou
   - Verificado no browser: busca de pessoa isola o bloco; setas + Enter navegam e
     executam; `Esc`/clique-fora fecham. Build limpo. Versão → **0.4.0**.
 
-### 2. Modo Foco / Tela Cheia Limpa (`F`) — ⬜ PENDENTE
+### 2. Modo Foco / Tela Cheia Limpa (`F`) — ✅ FEITO
 
 Oculta 100% da interface e deixa só o canvas interativo — para reuniões.
 
 - **Por que agora:** barato, alto impacto visual, não toca em dados.
-- **Escopo mínimo:**
-  - Atalho `F` (e um botão discreto) alterna o modo foco.
-  - Esconde Toolbar/faixas; mantém o canvas navegável.
-  - `Esc` ou `F` sai do modo.
-  - Opcional: usar a Fullscreen API do navegador.
-- **Arquivos prováveis:** `App.jsx` (estado `modoFoco` + render condicional da
-  Toolbar), pequeno botão/atalho.
-- **Notas:** _(preencher ao executar)_
+- **Escopo entregue:**
+  - Atalho `F` alterna o modo foco; esconde Toolbar + faixa de filtros + banners,
+    mantendo o canvas (com os controles de zoom do React Flow) navegável.
+  - `Esc`, `F` de novo, ou um **botão flutuante discreto** (canto superior direito,
+    opacidade baixa que sobe no hover) saem do modo.
+  - Espelha a **tela cheia real** do navegador via Fullscreen API (best-effort:
+    se bloqueada, o modo ainda esconde a interface do app); sair da tela cheia
+    pelo navegador (Esc/F11) também sai do modo foco (`fullscreenchange`).
+  - **Guard:** `F` é ignorado enquanto o usuário digita em input/textarea/campo
+    editável e com modificadores — senão "f" num nome ativaria o modo.
+- **Arquivos:** `App.jsx` (estado `modoFoco`, listeners de teclado e de tela
+  cheia, render condicional da Toolbar/banners, botão flutuante de saída).
+- **Notas:**
+  - **Descoberta (gatilho visível):** igual à paleta, sem botão de *entrada* na UI
+    — só o atalho `F`. Adiado para o item 3 (header). Já anotado no escopo dele.
+  - Verificado no browser: `F` entra/sai, botão de saída funciona, e o guard
+    impede o toggle ao digitar. Build limpo. Versão → **0.5.0**.
 
 ### 3. Header Flutuante (Top Dock) + Pílula de Visão — ⬜ PENDENTE
 
@@ -84,8 +93,9 @@ translucidez, com a pílula de alternância de visão no centro.
   - Zona esquerda: logo + seletor de cenários + nome do grupo editável.
   - Zona central: pílula `Organograma | Tabela | Cartões` (hoje o `modoVisao`).
   - Zona direita: `+ Adicionar` como ação primária + acesso ao Side Drawer (item 4).
-  - **Gatilho visível do Command Palette (item 1):** um botão/campo discreto de
-    busca com a dica `Ctrl+K`, para o usuário descobrir o atalho pela UI.
+  - **Gatilhos visíveis dos itens 1 e 2:** um botão/campo discreto de busca com a
+    dica `Ctrl+K` (paleta) e um botão de entrar no modo foco com a dica `F` —
+    para o usuário descobrir os atalhos pela UI.
   - Manter os `data-tour="..."` ao mover elementos (senão passos do Tour somem —
     ver CLAUDE.md / Tour.jsx).
 - **Arquivos prováveis:** `Toolbar.jsx` (reestruturação grande), `App.jsx`,
