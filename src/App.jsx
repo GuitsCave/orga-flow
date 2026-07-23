@@ -11,6 +11,7 @@ import ModalCopiarBloco from './components/ModalCopiarBloco.jsx'
 import TabelaView from './components/TabelaView.jsx'
 import CartoesView from './components/CartoesView.jsx'
 import CommandPalette from './components/CommandPalette.jsx'
+import SideDrawer from './components/SideDrawer.jsx'
 import {
   useOrgChart,
   listarBackups,
@@ -68,6 +69,7 @@ export default function App() {
   const [mostrarEtiquetasEmpresa, setMostrarEtiquetasEmpresa] = useState(true)
   const [modalEmpresas, setModalEmpresas] = useState(false)
   const [paletaAberta, setPaletaAberta] = useState(false)
+  const [drawerAberto, setDrawerAberto] = useState(false)
   // Modo foco/apresentação: esconde toda a interface, só o canvas fica
   const [modoFoco, setModoFoco] = useState(false)
   // Passo a passo: abre sozinho no primeiro acesso e fica no botão "?"
@@ -297,6 +299,17 @@ export default function App() {
     setPessoaIsolada(null)
   }
 
+  const aoImportar = (resultado) => {
+    // Só o pacote substitui tudo — aí sim preserva o workspace atual.
+    // Import de organograma único apenas adiciona um cenário, sem destruir.
+    if (resultado?.tipo === 'pacote') {
+      guardarBackupDoAtual()
+      setBackups(listarBackups())
+    }
+    substituirDados(resultado)
+    setPainel(null)
+  }
+
   // Estável entre renders para não recriar os nós (e perder a seleção) ao abrir o painel
   const addSubordinado = useCallback((id) => {
     setGestorPreset(id)
@@ -304,7 +317,7 @@ export default function App() {
   }, [])
 
   return (
-    <div className="flex h-full flex-col bg-slate-50">
+    <div className="flex h-full flex-col bg-slate-100">
       {!modoFoco && (
       <Toolbar
         dados={dados}
@@ -313,8 +326,6 @@ export default function App() {
           setGestorPreset(null)
           setPainel('nova')
         }}
-        onToggleManual={() => setLayoutManual(!dados.layoutManual)}
-        onReorganizar={limparPosicoes}
         filtroNiveis={filtroNiveis}
         maiorNivel={maiorNivel}
         onFiltroNiveis={setFiltroNiveis}
@@ -333,10 +344,8 @@ export default function App() {
         rotuloPessoa={rotuloPessoa}
         mostrarEtiquetasEmpresa={mostrarEtiquetasEmpresa}
         onToggleEtiquetas={() => setMostrarEtiquetasEmpresa((v) => !v)}
-        onAbrirEmpresas={() => setModalEmpresas(true)}
         filtrosAtivos={filtrosAtivos}
         onLimparFiltros={limparFiltros}
-        onAbrirTour={() => setTourAberto(true)}
         pessoasVisiveis={pessoasVisiveis}
         pessoaIsolada={pessoaIsolada}
         onLimparPessoaIsolada={() => setPessoaIsolada(null)}
@@ -350,16 +359,9 @@ export default function App() {
         onExcluirCenario={excluirCenario}
         modoVisao={modoVisao}
         onChangeModoVisao={setModoVisao}
-        onImportar={(resultado) => {
-          // Só o pacote substitui tudo — aí sim preserva o workspace atual.
-          // Import de organograma único apenas adiciona um cenário, sem destruir.
-          if (resultado?.tipo === 'pacote') {
-            guardarBackupDoAtual()
-            setBackups(listarBackups())
-          }
-          substituirDados(resultado)
-          setPainel(null)
-        }}
+        onAbrirPaleta={() => setPaletaAberta(true)}
+        onToggleFoco={() => setModoFoco((v) => !v)}
+        onAbrirMenu={() => setDrawerAberto(true)}
       />
       )}
 
@@ -496,6 +498,21 @@ export default function App() {
             Esc
           </kbd>
         </button>
+      )}
+
+      {drawerAberto && (
+        <SideDrawer
+          cenarios={cenarios}
+          cenarioAtivoId={cenarioAtivoId}
+          dados={dados}
+          onImportar={aoImportar}
+          onAbrirEmpresas={() => setModalEmpresas(true)}
+          layoutManual={dados.layoutManual}
+          onToggleManual={() => setLayoutManual(!dados.layoutManual)}
+          onReorganizar={limparPosicoes}
+          onAbrirTour={() => setTourAberto(true)}
+          onFechar={() => setDrawerAberto(false)}
+        />
       )}
 
       {paletaAberta && (

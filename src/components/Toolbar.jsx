@@ -1,28 +1,22 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import {
-  Building2,
   Check,
-  Download,
+  Contact,
   Eye,
   EyeOff,
   Filter,
-  HelpCircle,
-  LayoutGrid,
-  Move,
+  Maximize2,
+  Menu,
   Network,
   Pencil,
   Plus,
-  RotateCcw,
+  Search,
   SlidersHorizontal,
   Table,
   Tag,
-  Upload,
-  Contact,
   X,
 } from 'lucide-react'
-import { exportarJson, validarImportacao } from '../lib/arquivo.js'
 import { SEM_EMPRESA } from '../lib/modelo.js'
-import { APP_VERSION, dataBuildFormatada } from '../lib/versao.js'
 import MultiSelect from './MultiSelect.jsx'
 import CenarioSelector from './CenarioSelector.jsx'
 
@@ -43,13 +37,20 @@ function FiltroMultiSelect({ rotulo, valoresSelecionados, opcoes, onChange, rotu
   )
 }
 
+// Uma métrica compacta do bloco de headcount
+function Metrica({ rotulo, valor, titulo }) {
+  return (
+    <div className="flex items-baseline gap-1" title={titulo}>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{rotulo}</span>
+      <span className="text-xs font-semibold text-slate-700">{valor}</span>
+    </div>
+  )
+}
+
 export default function Toolbar({
   dados,
   onEmpresa,
   onNovaPessoa,
-  onToggleManual,
-  onReorganizar,
-  onImportar,
   filtroNiveis,
   maiorNivel,
   onFiltroNiveis,
@@ -68,13 +69,11 @@ export default function Toolbar({
   rotuloPessoa = (id) => id,
   mostrarEtiquetasEmpresa,
   onToggleEtiquetas,
-  onAbrirEmpresas,
   filtrosAtivos = 0,
   onLimparFiltros,
   pessoasVisiveis = [],
   pessoaIsolada = null,
   onLimparPessoaIsolada,
-  onAbrirTour,
   cenarios = [],
   cenarioAtivo,
   cenarioAtivoId,
@@ -85,9 +84,10 @@ export default function Toolbar({
   onExcluirCenario,
   modoVisao = 'canvas',
   onChangeModoVisao = () => {},
+  onAbrirPaleta,
+  onToggleFoco,
+  onAbrirMenu,
 }) {
-  const inputArquivo = useRef(null)
-  const [erroImport, setErroImport] = useState('')
   const [editandoEmpresa, setEditandoEmpresa] = useState(false)
   const [nomeEmpresa, setNomeEmpresa] = useState(dados.empresa)
 
@@ -102,53 +102,38 @@ export default function Toolbar({
   const visiveisGestores = pessoasVisiveis.filter((p) => p.ehGestor).length
 
   const temFiltro = filtrosAtivos > 0
+  const mostra = (visivel, total) => (temFiltro ? `${visivel}/${total}` : total)
 
-  function aoEscolherArquivo(e) {
-    const arquivo = e.target.files?.[0]
-    e.target.value = ''
-    if (!arquivo) return
-    const leitor = new FileReader()
-    leitor.onerror = () => setErroImport('Não foi possível ler o arquivo escolhido.')
-    leitor.onload = () => {
-      const resultado = validarImportacao(leitor.result)
-      if (resultado.erro) {
-        setErroImport(resultado.erro)
-      } else {
-        setErroImport('')
-        onImportar(resultado)
-      }
-    }
-    leitor.readAsText(arquivo)
-  }
+  const modos = [
+    { id: 'canvas', rotulo: 'Organograma', icone: Network, titulo: 'Visão Organograma (Canvas de Árvore)' },
+    { id: 'tabela', rotulo: 'Tabela', icone: Table, titulo: 'Visão Tabela (Diretório pesquisável e Excel)' },
+    { id: 'cartoes', rotulo: 'Cartões', icone: Contact, titulo: 'Visão Cartões (Agrupado por Departamento)' },
+  ]
 
-  const botao =
-    'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors'
-
-  const divisor = <span className="mx-1 h-6 w-px shrink-0 bg-slate-200" aria-hidden />
-  const iconeBotao =
-    'flex items-center justify-center rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700'
+  const cartao = 'rounded-2xl border border-slate-200/80 bg-white/80 shadow-lg backdrop-blur-md'
 
   return (
-    <header className="border-b border-slate-200 bg-white">
-      {/* Faixa 1 — identidade e ações */}
-      <div className="flex items-center gap-3 px-4 py-2.5">
+    <header className="shrink-0 space-y-2 px-3 pt-3">
+      {/* Dock flutuante — identidade, visão e ações */}
+      <div className={`${cartao} flex items-center gap-3 px-3 py-2`}>
+        {/* Zona esquerda — identidade e contexto */}
         <div className="flex shrink-0 items-center gap-2 text-brand-900">
           <Network size={22} />
           <span className="text-base font-extrabold tracking-tight">Orga</span>
-          <span className="text-[10px] text-slate-400 font-medium select-none ml-1 self-end mb-0.5 whitespace-nowrap">
+          <span className="ml-0.5 mb-0.5 hidden select-none self-end whitespace-nowrap text-[10px] font-medium text-slate-400 lg:inline">
             por{' '}
             <a
               href="https://guitstech.com.br/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-slate-500 hover:text-brand-600 transition-colors"
+              className="font-semibold text-slate-500 transition-colors hover:text-brand-600"
             >
               Guitstech
             </a>
           </span>
         </div>
 
-        {divisor}
+        <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200" aria-hidden />
 
         <CenarioSelector
           cenarios={cenarios}
@@ -159,8 +144,6 @@ export default function Toolbar({
           onDuplicarCenario={onDuplicarCenario}
           onExcluirCenario={onExcluirCenario}
         />
-
-        {divisor}
 
         {editandoEmpresa ? (
           <div data-tour="grupo" className="flex items-center gap-1">
@@ -180,7 +163,7 @@ export default function Toolbar({
                 onEmpresa(nomeEmpresa)
                 setEditandoEmpresa(false)
               }}
-              className="w-48 rounded-lg border border-slate-300 px-2 py-0.5 text-base font-semibold text-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 focus:outline-none"
+              className="w-40 rounded-lg border border-slate-300 px-2 py-0.5 text-sm font-semibold text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               aria-label="Nome do grupo"
               placeholder="Nome do grupo"
             />
@@ -189,18 +172,15 @@ export default function Toolbar({
                 onEmpresa(nomeEmpresa)
                 setEditandoEmpresa(false)
               }}
-              className="rounded-lg p-1 text-emerald-600 hover:bg-emerald-50 cursor-pointer"
+              className="cursor-pointer rounded-lg p-1 text-emerald-600 hover:bg-emerald-50"
               title="Salvar"
             >
               <Check size={16} />
             </button>
             <button
-              onMouseDown={(e) => {
-                // Previne o blur do input de fechar antes do click ser processado
-                e.preventDefault()
-              }}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => setEditandoEmpresa(false)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 cursor-pointer"
+              className="cursor-pointer rounded-lg p-1 text-slate-400 hover:bg-slate-100"
               title="Cancelar"
             >
               <X size={16} />
@@ -209,11 +189,9 @@ export default function Toolbar({
         ) : (
           <div
             data-tour="grupo"
-            className="flex items-center gap-1 group max-w-xs md:max-w-md lg:max-w-lg"
+            className="group flex min-w-0 items-center gap-1"
           >
-            <span
-              className="truncate px-2 py-0.5 text-base font-semibold text-slate-800"
-            >
+            <span className="truncate px-1 text-sm font-semibold text-slate-800">
               {dados.empresa || 'Nome do grupo'}
             </span>
             <button
@@ -221,7 +199,7 @@ export default function Toolbar({
                 setNomeEmpresa(dados.empresa)
                 setEditandoEmpresa(true)
               }}
-              className="rounded p-1 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
+              className="cursor-pointer rounded p-1 text-slate-400 opacity-0 transition-opacity hover:bg-slate-100 hover:text-slate-600 group-hover:opacity-100"
               title="Editar nome do grupo"
             >
               <Pencil size={14} />
@@ -229,201 +207,75 @@ export default function Toolbar({
           </div>
         )}
 
-        {/* Bloco de estatísticas */}
-        {totalCargos > 0 && (
-          <div className="hidden md:flex items-center gap-2 lg:gap-3 border-l border-slate-200 pl-3 lg:pl-4">
-            <div className="flex items-baseline gap-1 xl:flex-col xl:items-start xl:gap-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cargos</span>
-              <span className="text-xs font-semibold text-slate-800" title={`${visiveisCargos} cargos visíveis de um total de ${totalCargos}`}>
-                {temFiltro ? `${visiveisCargos}/${totalCargos}` : totalCargos}
-              </span>
-            </div>
-            
-            <div className="h-4 xl:h-6 w-px bg-slate-200" />
-            
-            <div className="flex items-baseline gap-1 xl:flex-col xl:items-start xl:gap-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pessoas</span>
-              <span className="text-xs font-semibold text-slate-800" title={`${visiveisPessoasAtivas} pessoas ocupadas de um total de ${totalPessoasAtivas}`}>
-                {temFiltro ? `${visiveisPessoasAtivas}/${totalPessoasAtivas}` : totalPessoasAtivas}
-              </span>
-            </div>
-            
-            <div className="h-4 xl:h-6 w-px bg-slate-200" />
-            
-            <div className="flex items-baseline gap-1 xl:flex-col xl:items-start xl:gap-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Gestores</span>
-              <span className="text-xs font-semibold text-slate-800" title={`${visiveisGestores} gestores visíveis de um total de ${totalGestores}`}>
-                {temFiltro ? `${visiveisGestores}/${totalGestores}` : totalGestores}
-              </span>
-            </div>
-            
-            <div className="h-4 xl:h-6 w-px bg-slate-200" />
-            
-            <div className="flex items-baseline gap-1 xl:flex-col xl:items-start xl:gap-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vagas</span>
-              <span className="text-xs font-semibold text-slate-800" title={`${visiveisVagas} vagas em aberto de um total de ${totalVagas}`}>
-                {temFiltro ? `${visiveisVagas}/${totalVagas}` : totalVagas}
-              </span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex-1" />
-
-        {/* Seletor de Modo de Visualização */}
-        <div className="flex items-center rounded-xl bg-slate-100 p-0.5 border border-slate-200 shadow-2xs">
-          <button
-            type="button"
-            onClick={() => onChangeModoVisao('canvas')}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-              modoVisao === 'canvas'
-                ? 'bg-white text-brand-900 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            title="Visão Organograma (Canvas de Árvore)"
-          >
-            <Network className="h-3.5 w-3.5 text-brand-600" />
-            <span className="hidden sm:inline">Organograma</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeModoVisao('tabela')}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-              modoVisao === 'tabela'
-                ? 'bg-white text-brand-900 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            title="Visão Tabela (Diretório pesquisável e Excel)"
-          >
-            <Table className="h-3.5 w-3.5 text-brand-600" />
-            <span className="hidden sm:inline">Tabela</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeModoVisao('cartoes')}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-              modoVisao === 'cartoes'
-                ? 'bg-white text-brand-900 shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-            title="Visão Cartões (Agrupado por Departamento)"
-          >
-            <Contact className="h-3.5 w-3.5 text-brand-600" />
-            <span className="hidden sm:inline">Cartões</span>
-          </button>
+        {/* Zona central — modos de visão */}
+        <div className="mx-auto flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shadow-inner">
+          {modos.map((m) => {
+            const Icone = m.icone
+            const ativo = modoVisao === m.id
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => onChangeModoVisao(m.id)}
+                title={m.titulo}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                  ativo ? 'bg-white text-brand-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Icone className="h-3.5 w-3.5 text-brand-600" />
+                <span className="hidden sm:inline">{m.rotulo}</span>
+              </button>
+            )
+          })}
         </div>
 
-        {divisor}
-
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Zona direita — ações */}
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
             data-tour="adicionar"
             onClick={onNovaPessoa}
-            className={`${botao} bg-brand-600 text-white shadow-sm hover:bg-brand-700`}
+            className="flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
           >
-            <Plus size={16} /> Adicionar
+            <Plus size={16} /> <span className="hidden sm:inline">Adicionar</span>
           </button>
 
           <button
-            data-tour="empresas"
-            onClick={onAbrirEmpresas}
-            className={`${botao} bg-slate-100 text-slate-700 hover:bg-slate-200`}
-            title="Cadastrar as empresas do grupo"
+            onClick={onAbrirPaleta}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/60 px-2.5 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            title="Buscar pessoas e comandos"
           >
-            <Building2 size={16} />
-            <span className="hidden lg:inline">Empresas</span>
+            <Search size={15} />
+            <span className="hidden lg:inline">Buscar</span>
+            <kbd className="hidden rounded border border-slate-200 bg-slate-50 px-1 text-[10px] font-semibold text-slate-400 lg:inline">
+              Ctrl K
+            </kbd>
           </button>
-
-          {divisor}
 
           <button
-            data-tour="layout"
-            onClick={onToggleManual}
-            className={`${botao} ${dados.layoutManual
-                ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            title={
-              dados.layoutManual
-                ? 'Modo manual ativo: arraste os blocos livremente'
-                : 'Layout automático ativo: organizado por níveis'
-            }
+            onClick={onToggleFoco}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            title="Modo foco / apresentação (tecla F)"
+            aria-label="Entrar no modo foco"
           >
-            {dados.layoutManual ? <Move size={16} /> : <LayoutGrid size={16} />}
-            {dados.layoutManual ? 'Manual' : 'Automático'}
+            <Maximize2 size={18} />
           </button>
-
-          {dados.layoutManual && (
-            <button
-              onClick={onReorganizar}
-              className={`${botao} bg-slate-100 text-slate-700 hover:bg-slate-200`}
-              title="Descarta as posições manuais e volta ao layout automático"
-            >
-              <RotateCcw size={16} />
-              <span className="hidden lg:inline">Reorganizar</span>
-            </button>
-          )}
-
-          {divisor}
-
-          <span data-tour="arquivo" className="flex items-center gap-2">
-            <button
-              onClick={() => exportarJson({ cenarios, cenarioAtivoId, dados })}
-              className={iconeBotao}
-              title="Exportar backup completo (JSON com todos os organogramas)"
-            >
-              <Upload size={18} />
-            </button>
-            <button
-              onClick={() => inputArquivo.current?.click()}
-              className={iconeBotao}
-              title="Importar JSON"
-            >
-              <Download size={18} />
-            </button>
-          </span>
-          <input
-            ref={inputArquivo}
-            type="file"
-            accept=".json,application/json"
-            className="hidden"
-            onChange={aoEscolherArquivo}
-          />
-
-          {divisor}
 
           <button
-            onClick={onAbrirTour}
-            className={iconeBotao}
-            title="Ver o passo a passo de como usar o Orga"
-            aria-label="Ajuda: passo a passo"
+            data-tour="menu"
+            onClick={onAbrirMenu}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            title="Menu: empresas, backup, layout e ajuda"
+            aria-label="Abrir menu"
           >
-            <HelpCircle size={18} />
+            <Menu size={18} />
           </button>
-
-          <span
-            className="flex items-center gap-1.5 shrink-0 rounded-md bg-slate-100 px-2 py-1 font-mono text-[11px] font-semibold text-slate-500"
-            title={
-              dataBuildFormatada()
-                ? `Versão ${APP_VERSION} — build de ${dataBuildFormatada()} (Operacional)`
-                : `Versão ${APP_VERSION} (Operacional)`
-            }
-          >
-            <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-            </span>
-            v{APP_VERSION}
-          </span>
         </div>
       </div>
 
-      {/* Faixa 2 — filtros e opções de visualização */}
+      {/* Faixa de filtros e opções de visualização */}
       <div
         data-tour="filtros"
-        className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50 px-4 py-2"
+        className={`${cartao} flex flex-wrap items-center gap-2 px-3 py-2`}
       >
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
           <Filter size={13} /> Filtros
@@ -489,7 +341,7 @@ export default function Toolbar({
             Foco: {rotuloPessoa(pessoaIsolada)}
             <button
               onClick={onLimparPessoaIsolada}
-              className="ml-1 rounded-full p-0.5 hover:bg-amber-100 text-amber-600 hover:text-amber-800 cursor-pointer"
+              className="ml-1 cursor-pointer rounded-full p-0.5 text-amber-600 hover:bg-amber-100 hover:text-amber-800"
               title="Limpar foco"
             >
               <X size={12} />
@@ -508,13 +360,40 @@ export default function Toolbar({
         )}
 
         <div className="ml-auto flex items-center gap-3">
+          {/* Headcount */}
+          {totalCargos > 0 && (
+            <div className="hidden items-center gap-2 border-r border-slate-200 pr-3 md:flex lg:gap-3">
+              <Metrica
+                rotulo="Cargos"
+                valor={mostra(visiveisCargos, totalCargos)}
+                titulo={`${visiveisCargos} cargos visíveis de um total de ${totalCargos}`}
+              />
+              <Metrica
+                rotulo="Pessoas"
+                valor={mostra(visiveisPessoasAtivas, totalPessoasAtivas)}
+                titulo={`${visiveisPessoasAtivas} pessoas ocupadas de um total de ${totalPessoasAtivas}`}
+              />
+              <Metrica
+                rotulo="Gestores"
+                valor={mostra(visiveisGestores, totalGestores)}
+                titulo={`${visiveisGestores} gestores visíveis de um total de ${totalGestores}`}
+              />
+              <Metrica
+                rotulo="Vagas"
+                valor={mostra(visiveisVagas, totalVagas)}
+                titulo={`${visiveisVagas} vagas em aberto de um total de ${totalVagas}`}
+              />
+            </div>
+          )}
+
           {empresas.length > 0 && (
             <button
               onClick={onToggleEtiquetas}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors ${mostrarEtiquetasEmpresa
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors ${
+                mostrarEtiquetasEmpresa
                   ? 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
                   : 'text-slate-400 hover:bg-slate-100'
-                }`}
+              }`}
               title={
                 mostrarEtiquetasEmpresa
                   ? 'Etiquetas de empresa visíveis nos cards — clique para ocultar'
@@ -528,15 +407,6 @@ export default function Toolbar({
           )}
         </div>
       </div>
-
-      {erroImport && (
-        <div className="flex items-center justify-between bg-red-50 px-4 py-2 text-sm font-medium text-red-700">
-          <span>Erro ao importar: {erroImport}</span>
-          <button onClick={() => setErroImport('')} className="font-bold hover:underline">
-            Fechar
-          </button>
-        </div>
-      )}
     </header>
   )
 }

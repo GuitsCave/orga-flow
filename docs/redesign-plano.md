@@ -83,40 +83,50 @@ Oculta 100% da interface e deixa só o canvas interativo — para reuniões.
     o toggle ao digitar, e a paleta expõe/alterna a ação. Build limpo.
     Versões → **0.5.0** (modo foco) + **0.5.1** (ação na paleta).
 
-### 3. Header Flutuante (Top Dock) + Pílula de Visão — ⬜ PENDENTE
+### 3. Header Flutuante (Top Dock) + Pílula de Visão — ✅ FEITO (junto com o 4)
 
-O redesign de fato: Toolbar vira dock flutuante com cantos arredondados e
-translucidez, com a pílula de alternância de visão no centro.
+O redesign de fato: Toolbar virou dock flutuante com cantos arredondados,
+translucidez e sombra, com a pílula de alternância de visão no centro.
+**Feito em conjunto com o item 4** (Side Drawer) porque o header minimalista
+precisa do drawer como lar dos botões administrativos — separá-los deixaria
+ações órfãs.
 
-- **Risco conhecido — glassmorphism sobre o canvas:** `backdrop-blur` sobre nós
-  coloridos e linhas pode virar sopa visual. Usar fallback sólido generoso
-  (ex.: `bg-white/80`, não `/50`) e **testar contraste de verdade** no browser
-  antes de fechar.
-- **Escopo:**
-  - Zona esquerda: logo + seletor de cenários + nome do grupo editável.
-  - Zona central: pílula `Organograma | Tabela | Cartões` (hoje o `modoVisao`).
-  - Zona direita: `+ Adicionar` como ação primária + acesso ao Side Drawer (item 4).
-  - **Gatilhos visíveis dos itens 1 e 2:** um botão/campo discreto de busca com a
-    dica `Ctrl+K` (paleta) e um botão de entrar no modo foco com a dica `F` —
-    para o usuário descobrir os atalhos pela UI.
-  - Manter os `data-tour="..."` ao mover elementos (senão passos do Tour somem —
-    ver CLAUDE.md / Tour.jsx).
-- **Arquivos prováveis:** `Toolbar.jsx` (reestruturação grande), `App.jsx`,
-  possivelmente `index.css` (tokens de blur/sombra).
-- **Notas:** _(preencher ao executar)_
+- **Escopo entregue:**
+  - Zona esquerda: logo + `CenarioSelector` + nome do grupo editável.
+  - Zona central: pílula `Organograma | Tabela | Cartões`.
+  - Zona direita: `+ Adicionar` (primário) + gatilho **Buscar `Ctrl K`** (abre a
+    paleta, item 1) + botão de **Foco** (item 2) + `☰` que abre o Side Drawer.
+  - Duas faixas flutuantes (dock + filtros), cada uma um cartão
+    `rounded-2xl bg-white/80 backdrop-blur-md shadow-lg`; o fundo do app virou
+    `bg-slate-100` para os cartões "descolarem".
+  - Headcount (Cargos/Pessoas/Gestores/Vagas) foi para a faixa de filtros.
+- **Sobre o risco do glassmorphism:** resolvido evitando-o. O dock fica em **fluxo
+  normal** (reserva seu espaço, não sobrepõe o canvas nem as visões tabela/cartões),
+  então o `backdrop-blur` não incide sobre nós coloridos — sem sopa visual e sem
+  problema de contraste. Um overlay glass *sobre* o canvas continua possível como
+  ajuste futuro, se o usuário quiser esse look específico.
+- **Tour:** os `data-tour` de `empresas`/`layout`/`arquivo` saíram do header; os
+  três passos viraram **um só** apontando para o `☰` (`data-tour="menu"`).
+- **Arquivos:** `Toolbar.jsx` (reescrita), `SideDrawer.jsx` (novo), `App.jsx`,
+  `Tour.jsx`.
+- **Notas:** verificado no browser — dock, pílula, Buscar→paleta, Foco, ☰→drawer,
+  e o passo "menu" do tour destacando o `☰`. Tabela/Cartões sem sobreposição.
+  Versão → **0.6.0**.
 
-### 4. Side Drawer (Menu Lateral Retrátil) — ⬜ PENDENTE
+### 4. Side Drawer (Menu Lateral Retrátil) — ✅ FEITO (junto com o 3)
 
-Painel lateral deslizante para funções administrativas, despoluindo o header.
+Painel lateral deslizante (desliza da direita) com as ações administrativas que
+saíram do header.
 
-- **Depende de:** item 3 estar pronto (o gatilho vive no header novo).
-- **Escopo:**
-  - Gerenciador de Arquivos: exportar/importar JSON, restaurar backups.
-  - Cadastro do Grupo: empresas (abre o `EmpresasModal`) e reordenação.
-  - Ajuda e Padrões: Tour, atalhos de teclado, versão do app.
-- **Arquivos prováveis:** novo `src/components/SideDrawer.jsx` (pode reusar
-  `ModalBase` para Esc/fundo), `Toolbar.jsx`/`App.jsx` para o wiring.
-- **Notas:** _(preencher ao executar)_
+- **Escopo entregue** (`SideDrawer.jsx`):
+  - **Arquivo:** Exportar JSON, Importar JSON (com erro embutido). Restaurar
+    backups continua na faixa âmbar do topo (App), como antes.
+  - **Grupo:** Cadastrar empresas (abre `EmpresasModal`), Layout
+    automático/manual, Reorganizar (quando manual).
+  - **Ajuda:** Passo a passo (tour) + lista de **atalhos** (`Ctrl K`, `F`).
+  - **Rodapé:** versão do app + data do build (saiu do header).
+  - Fecha no `Esc`, no clique fora, e depois de abrir outra tela.
+- **Notas:** ver item 3 — foram entregues na mesma mudança.
 
 ### 5. Modo Confidencial (Anonimizador) — ⬜ PENDENTE
 

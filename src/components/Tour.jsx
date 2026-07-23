@@ -13,7 +13,7 @@ export const PASSOS = [
   {
     titulo: 'Bem-vindo ao Orga',
     texto:
-      'Aqui você monta o organograma da sua empresa. São 8 passos rápidos mostrando o essencial. Você pode sair quando quiser e reabrir depois no botão “?”.',
+      'Aqui você monta o organograma da sua empresa. Um tour rápido mostrando o essencial. Você pode sair quando quiser e reabrir depois pelo menu “☰”.',
   },
   {
     alvo: 'grupo',
@@ -33,28 +33,16 @@ export const PASSOS = [
       'Clique em um bloco para editá-lo. Ao passar o mouse sobre um gestor, aparece um botão “+” embaixo dele que já cria um subordinado com o gestor e o nível preenchidos.',
   },
   {
-    alvo: 'empresas',
-    titulo: 'Empresas do grupo',
-    texto:
-      'Cadastre as empresas do grupo, cada uma com sua cor. Depois, no cadastro do cargo, você marca a quais empresas ele pertence — quem não marcar herda a empresa do gestor.',
-  },
-  {
     alvo: 'filtros',
     titulo: 'Filtros',
     texto:
       'Filtre por empresa, gestor, área, setor ou nível. Filtrar por um gestor mostra a árvore inteira abaixo dele. Os filtros só mudam o que você vê — nada é apagado.',
   },
   {
-    alvo: 'layout',
-    titulo: 'Layout automático ou manual',
+    alvo: 'menu',
+    titulo: 'Menu e configurações',
     texto:
-      'No automático os blocos se organizam sozinhos por nível. No manual você arrasta cada bloco livremente, e as posições ficam salvas.',
-  },
-  {
-    alvo: 'arquivo',
-    titulo: 'Backup dos dados',
-    texto:
-      'Tudo fica salvo apenas neste navegador. Exporte um arquivo JSON de tempos em tempos para não perder nada — e use o importar para restaurar ou levar para outro computador.',
+      'Aqui ficam o cadastro de empresas (cada uma com sua cor), o backup dos dados (exportar/importar JSON), o layout automático ou manual e este passo a passo. Tudo é salvo apenas neste navegador — exporte de tempos em tempos.',
   },
   {
     titulo: 'Tudo pronto!',
