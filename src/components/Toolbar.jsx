@@ -114,8 +114,10 @@ export default function Toolbar({
 
   return (
     <header className="shrink-0 space-y-2 px-3 pt-3">
-      {/* Dock flutuante — identidade, visão e ações */}
-      <div className={`${cartao} flex items-center gap-3 px-3 py-2`}>
+      {/* Dock flutuante — identidade, visão e ações.
+          z-20 acima da faixa de filtros: senão o backdrop-blur dela (que cria um
+          stacking context) cobriria o dropdown de cenários que abre para baixo. */}
+      <div className={`${cartao} relative z-20 flex items-center gap-3 px-3 py-2`}>
         {/* Zona esquerda — identidade e contexto */}
         <div className="flex shrink-0 items-center gap-2 text-brand-900">
           <Network size={22} />
@@ -275,7 +277,7 @@ export default function Toolbar({
       {/* Faixa de filtros e opções de visualização */}
       <div
         data-tour="filtros"
-        className={`${cartao} flex flex-wrap items-center gap-2 px-3 py-2`}
+        className={`${cartao} relative z-10 flex flex-wrap items-center gap-2 px-3 py-2`}
       >
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
           <Filter size={13} /> Filtros
