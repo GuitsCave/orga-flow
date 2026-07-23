@@ -6,6 +6,10 @@ import OrgCanvas from './components/OrgCanvas.jsx'
 import PessoaForm from './components/PessoaForm.jsx'
 import EmpresasModal from './components/EmpresasModal.jsx'
 import Tour from './components/Tour.jsx'
+import ModalCenario from './components/ModalCenario.jsx'
+import ModalCopiarBloco from './components/ModalCopiarBloco.jsx'
+import TabelaView from './components/TabelaView.jsx'
+import CartoesView from './components/CartoesView.jsx'
 import {
   useOrgChart,
   listarBackups,
@@ -20,6 +24,9 @@ import { SEM_EMPRESA, comDescendentes, empresasEfetivas } from './lib/modelo.js'
 export default function App() {
   const {
     dados,
+    cenarios,
+    cenarioAtivoId,
+    cenarioAtivo,
     setEmpresa,
     setLayoutManual,
     salvarPessoa,
@@ -31,11 +38,21 @@ export default function App() {
     limparPosicoes,
     salvarEmpresa,
     excluirEmpresa,
+    reordenarEmpresas,
     substituirDados,
+    selecionarCenario,
+    criarCenario,
+    duplicarCenario,
+    renomearCenario,
+    excluirCenario,
+    copiarPessoasParaCenario,
   } = useOrgChart()
 
   // null = painel fechado; 'nova' = criando; id = editando
   const [painel, setPainel] = useState(null)
+  const [modoVisao, setModoVisao] = useState('canvas') // 'canvas' | 'tabela' | 'cartoes'
+  const [modalCenario, setModalCenario] = useState({ aberto: false, modo: 'novo', cenario: null })
+  const [modalCopiarBloco, setModalCopiarBloco] = useState({ aberto: false, pessoa: null })
   // gestor pré-selecionado ao criar via "+" de um bloco gestor
   const [gestorPreset, setGestorPreset] = useState(null)
   // filtro de profundidade (array com múltiplos níveis selecionados)
@@ -72,6 +89,14 @@ export default function App() {
   // Dados que não puderam ser abertos ficam guardados para recuperação
   const [backups, setBackups] = useState(listarBackups)
 
+  // Excluir um cenário grava um backup dentro de um updater assíncrono; o número
+  // de cenários muda só em criar/excluir/importar, então é o gatilho certo (e
+  // barato) para reavaliar a faixa de recuperação sem depender de ordenação.
+  const totalCenarios = cenarios.length
+  useEffect(() => {
+    setBackups(listarBackups())
+  }, [totalCenarios])
+
   // Avisa quando o app foi atualizado desde a última visita (nunca na 1ª vez).
   // O inicializador só LÊ: gravar aqui quebraria com a dupla execução do StrictMode.
   const [versaoAnterior, setVersaoAnterior] = useState(() => {
@@ -90,6 +115,18 @@ export default function App() {
       /* storage indisponível */
     }
   }, [])
+
+  // Ao alternar entre organogramas/cenários, limpa os filtros ativos e painéis
+  useEffect(() => {
+    setPainel(null)
+    setGestorPreset(null)
+    setPessoaIsolada(null)
+    setFiltroGestores([])
+    setFiltroArea([])
+    setFiltroSetor([])
+    setFiltroEmpresas([])
+    setFiltroNiveis([])
+  }, [cenarioAtivoId])
   const [pessoaIsolada, setPessoaIsolada] = useState(null)
   const pessoaSelecionada =
     painel && painel !== 'nova' ? dados.pessoas.find((p) => p.id === painel) : null
@@ -236,11 +273,24 @@ export default function App() {
         pessoasVisiveis={pessoasVisiveis}
         pessoaIsolada={pessoaIsolada}
         onLimparPessoaIsolada={() => setPessoaIsolada(null)}
-        onImportar={(novos) => {
-          // Importar substitui tudo: preserva o organograma atual antes de trocar
-          guardarBackupDoAtual()
-          setBackups(listarBackups())
-          substituirDados(novos)
+        cenarios={cenarios}
+        cenarioAtivo={cenarioAtivo}
+        cenarioAtivoId={cenarioAtivoId}
+        onSelecionarCenario={selecionarCenario}
+        onAbrirNovoCenario={() => setModalCenario({ aberto: true, modo: 'novo', cenario: null })}
+        onAbrirRenomearCenario={(c) => setModalCenario({ aberto: true, modo: 'renomear', cenario: c })}
+        onDuplicarCenario={duplicarCenario}
+        onExcluirCenario={excluirCenario}
+        modoVisao={modoVisao}
+        onChangeModoVisao={setModoVisao}
+        onImportar={(resultado) => {
+          // Só o pacote substitui tudo — aí sim preserva o workspace atual.
+          // Import de organograma único apenas adiciona um cenário, sem destruir.
+          if (resultado?.tipo === 'pacote') {
+            guardarBackupDoAtual()
+            setBackups(listarBackups())
+          }
+          substituirDados(resultado)
           setPainel(null)
         }}
       />
@@ -292,7 +342,7 @@ export default function App() {
       )}
 
       <div className="flex min-h-0 flex-1">
-        <main data-tour="canvas" className="relative min-w-0 flex-1">
+        <main data-tour="canvas" className="relative min-w-0 flex-1 overflow-hidden">
           {dados.pessoas.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-400">
               <Users size={48} strokeWidth={1.5} />
@@ -300,6 +350,25 @@ export default function App() {
                 Nenhuma pessoa cadastrada. Clique em “Adicionar” para começar.
               </p>
             </div>
+          ) : modoVisao === 'tabela' ? (
+            <TabelaView
+              pessoas={pessoasVisiveis}
+              todasPessoas={dados.pessoas}
+              empresas={dados.empresas ?? []}
+              onSelecionar={(id) => setPainel(id)}
+              onExcluir={excluirPessoa}
+              onAddSubordinado={addSubordinado}
+              rotuloPessoa={rotuloPessoa}
+            />
+          ) : modoVisao === 'cartoes' ? (
+            <CartoesView
+              pessoas={pessoasVisiveis}
+              todasPessoas={dados.pessoas}
+              empresas={dados.empresas ?? []}
+              onSelecionar={(id) => setPainel(id)}
+              onExcluir={excluirPessoa}
+              onAddSubordinado={addSubordinado}
+            />
           ) : (
             <ReactFlowProvider>
               <OrgCanvas
@@ -328,6 +397,7 @@ export default function App() {
                 onReordenar={reordenarPessoa}
                 onAlterarNivelBloco={alterarNivelBloco}
                 onAlterarNivelEquipe={alterarNivelEquipe}
+                onAbrirCopiarBloco={(p) => setModalCopiarBloco({ aberto: true, pessoa: p })}
               />
             </ReactFlowProvider>
           )}
@@ -354,7 +424,32 @@ export default function App() {
           pessoas={dados.pessoas}
           onSalvar={salvarEmpresa}
           onExcluir={excluirEmpresa}
+          onReordenar={reordenarEmpresas}
           onFechar={() => setModalEmpresas(false)}
+        />
+      )}
+
+      {/* Montados só quando abertos: os modais chamam hooks, então não podem
+          existir na árvore com um return condicional interno. */}
+      {modalCenario.aberto && (
+        <ModalCenario
+          modoInicial={modalCenario.modo}
+          cenarioParaRenomear={modalCenario.cenario}
+          cenarios={cenarios}
+          cenarioAtivo={cenarioAtivo}
+          onCriarCenario={criarCenario}
+          onRenomearCenario={renomearCenario}
+          onFechar={() => setModalCenario({ aberto: false, modo: 'novo', cenario: null })}
+        />
+      )}
+
+      {modalCopiarBloco.aberto && modalCopiarBloco.pessoa && (
+        <ModalCopiarBloco
+          pessoa={modalCopiarBloco.pessoa}
+          cenarios={cenarios}
+          cenarioAtivoId={cenarioAtivoId}
+          onCopiar={copiarPessoasParaCenario}
+          onFechar={() => setModalCopiarBloco({ aberto: false, pessoa: null })}
         />
       )}
     </div>

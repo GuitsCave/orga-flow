@@ -18,39 +18,39 @@ export function baixarTexto(nomeArquivo, conteudo) {
 }
 
 /**
- * Exporta os dados como download de organograma.json.
- *
- * O arquivo leva duas informações de versão, com papéis diferentes:
- * - `version`: versão do FORMATO dos dados, usada na importação para migrar.
- * - `appVersion`: versão do APLICATIVO que gerou o arquivo, apenas informativa.
+ * Exporta os dados completos como download de organograma.json.
+ * Suporta o envio do pacote completo de cenários ou de um único organograma.
  */
-export function exportarJson(dados) {
-  const conteudo = {
-    ...dados,
-    version: CURRENT_VERSION,
-    appVersion: APP_VERSION,
-    exportadoEm: new Date().toISOString(),
+export function exportarJson(payload) {
+  let conteudo
+  if (payload && Array.isArray(payload.cenarios)) {
+    conteudo = {
+      version: CURRENT_VERSION,
+      appVersion: APP_VERSION,
+      exportadoEm: new Date().toISOString(),
+      cenarios: payload.cenarios,
+      ativoId: payload.cenarioAtivoId,
+      ...(payload.dados || {}),
+    }
+  } else {
+    conteudo = {
+      ...payload,
+      version: CURRENT_VERSION,
+      appVersion: APP_VERSION,
+      exportadoEm: new Date().toISOString(),
+    }
   }
   baixarTexto('organograma.json', JSON.stringify(conteudo, null, 2))
 }
 
 /**
- * Valida e normaliza um JSON importado.
- * Retorna { dados } em caso de sucesso ou { erro } com mensagem amigável.
+ * Valida a estrutura de dados de um organograma individual.
  */
-export function validarImportacao(texto) {
-  let bruto
-  try {
-    bruto = JSON.parse(texto)
-  } catch {
-    return { erro: 'O arquivo não é um JSON válido.' }
-  }
-
+function validarObjetoDados(bruto) {
   if (typeof bruto !== 'object' || bruto === null || !Array.isArray(bruto.pessoas)) {
     return { erro: 'Estrutura inválida: esperado um objeto com a lista "pessoas".' }
   }
 
-  // Cadastro de empresas (opcional — arquivos antigos não têm)
   const empresas = []
   const idsEmpresa = new Set()
   if (bruto.empresas !== undefined) {
@@ -95,7 +95,6 @@ export function validarImportacao(texto) {
     }
     ids.add(p.id)
     const vagaAberta = p.vagaAberta === true
-    // Vaga em aberto pode não ter nome (posição sem titular)
     if (!vagaAberta && (!p.nome || typeof p.nome !== 'string')) {
       return { erro: `Pessoa "${p.id}" está sem "nome".` }
     }
@@ -121,7 +120,6 @@ export function validarImportacao(texto) {
       descricao: typeof p.descricao === 'string' ? p.descricao : '',
       gestorId: typeof p.gestorId === 'string' ? p.gestorId : null,
       ehGestor: typeof p.ehGestor === 'boolean' ? p.ehGestor : undefined,
-      // Ids inválidos/órfãos são descartados por normalizarEmpresas
       empresaIds: Array.isArray(p.empresaIds)
         ? p.empresaIds.filter((id) => typeof id === 'string')
         : [],
@@ -145,14 +143,79 @@ export function validarImportacao(texto) {
 
   return {
     dados: normalizarEmpresas({
-      // Sempre a versão atual: a do arquivo é ignorada de propósito, para um
-      // backup antigo continuar podendo ser restaurado.
       version: CURRENT_VERSION,
       empresa: typeof bruto.empresa === 'string' ? bruto.empresa : 'Minha Empresa',
       empresas,
       layoutManual: bruto.layoutManual === true,
       pessoas: normalizarGestores(pessoas),
     }),
+  }
+}
+
+/**
+ * Valida e normaliza um JSON importado.
+ * Suporta importar um pacote de múltiplos cenários ou um organograma único.
+ */
+export function validarImportacao(texto) {
+  let bruto
+  try {
+    bruto = JSON.parse(texto)
+  } catch {
+    return { erro: 'O arquivo não é um JSON válido.' }
+  }
+
+  if (typeof bruto !== 'object' || bruto === null) {
+    return { erro: 'Estrutura inválida.' }
+  }
+
+  // Pacote com múltiplos cenários (backup completo) — substitui tudo
+  if (Array.isArray(bruto.cenarios) && bruto.cenarios.length > 0) {
+    const cenariosValidados = []
+    const idsCenario = new Set()
+    for (let i = 0; i < bruto.cenarios.length; i++) {
+      const c = bruto.cenarios[i]
+      const res = validarObjetoDados(c.dados || c)
+      if (res.erro) {
+        return { erro: `Erro no organograma "${c.nome || i + 1}": ${res.erro}` }
+      }
+      const id = c.id || `cenario-${i + 1}`
+      if (idsCenario.has(id)) {
+        return { erro: `Id de organograma duplicado no arquivo: "${id}".` }
+      }
+      idsCenario.add(id)
+      cenariosValidados.push({
+        id,
+        nome: c.nome || res.dados.empresa || `Organograma ${i + 1}`,
+        criadoEm: c.criadoEm || Date.now(),
+        modificadoEm: c.modificadoEm || Date.now(),
+        dados: res.dados,
+      })
+    }
+    return {
+      tipo: 'pacote',
+      cenarios: cenariosValidados,
+      ativoId: idsCenario.has(bruto.ativoId) ? bruto.ativoId : cenariosValidados[0].id,
+      dados: cenariosValidados[0].dados,
+    }
+  }
+
+  // Organograma único (formato original / legado) — adicionado como novo cenário
+  const res = validarObjetoDados(bruto)
+  if (res.erro) return res
+
+  const cenarioUnico = {
+    id: `cenario-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+    nome: res.dados.empresa || 'Organograma Importado',
+    criadoEm: Date.now(),
+    modificadoEm: Date.now(),
+    dados: res.dados,
+  }
+
+  return {
+    tipo: 'unico',
+    dados: res.dados,
+    cenarios: [cenarioUnico],
+    ativoId: cenarioUnico.id,
   }
 }
 

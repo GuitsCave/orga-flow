@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building2, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { Building2, Check, Pencil, Plus, Trash2, X, ArrowUp, ArrowDown } from 'lucide-react'
 import { CORES_EMPRESA, COR_EMPRESA_PADRAO } from '../lib/modelo.js'
 
 /** Paleta de cores clicável usada na criação e na edição. */
@@ -24,15 +24,25 @@ function SeletorCor({ valor, onChange }) {
 }
 
 /**
- * Cadastro de empresas do grupo: adicionar, renomear, trocar a cor e excluir.
+ * Cadastro de empresas do grupo: adicionar, renomear, trocar a cor, reordenar e excluir.
  * `pessoas` é usado só para avisar quantos cargos usam a empresa antes de excluir.
  */
-export default function EmpresasModal({ empresas, pessoas, onSalvar, onExcluir, onFechar }) {
+export default function EmpresasModal({ empresas, pessoas, onSalvar, onExcluir, onReordenar, onFechar }) {
   const [nome, setNome] = useState('')
   const [cor, setCor] = useState(COR_EMPRESA_PADRAO)
   const [editandoId, setEditandoId] = useState(null)
   const [rascunho, setRascunho] = useState({ nome: '', cor: COR_EMPRESA_PADRAO })
   const [confirmarExclusao, setConfirmarExclusao] = useState(null)
+
+  const moverEmpresa = (index, delta) => {
+    const novoIdx = index + delta
+    if (novoIdx < 0 || novoIdx >= empresas.length) return
+    const novas = [...empresas]
+    const temp = novas[index]
+    novas[index] = novas[novoIdx]
+    novas[novoIdx] = temp
+    onReordenar?.(novas)
+  }
 
   const usoDaEmpresa = (id) => pessoas.filter((p) => (p.empresaIds ?? []).includes(id)).length
 
@@ -82,7 +92,7 @@ export default function EmpresasModal({ empresas, pessoas, onSalvar, onExcluir, 
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
-              {empresas.map((e) => {
+              {empresas.map((e, idx) => {
                 const emUso = usoDaEmpresa(e.id)
                 return (
                   <li key={e.id} className="rounded-lg border border-slate-200 px-3 py-2">
@@ -115,6 +125,26 @@ export default function EmpresasModal({ empresas, pessoas, onSalvar, onExcluir, 
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moverEmpresa(idx, -1)}
+                            className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
+                            title="Subir posição na ordem global das etiquetas"
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === empresas.length - 1}
+                            onClick={() => moverEmpresa(idx, 1)}
+                            className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
+                            title="Descer posição na ordem global das etiquetas"
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                        </div>
                         <span
                           className="h-4 w-4 shrink-0 rounded-full"
                           style={{ backgroundColor: e.cor }}

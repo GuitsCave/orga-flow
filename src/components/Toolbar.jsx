@@ -14,14 +14,17 @@ import {
   Plus,
   RotateCcw,
   SlidersHorizontal,
+  Table,
   Tag,
   Upload,
+  Contact,
   X,
 } from 'lucide-react'
 import { exportarJson, validarImportacao } from '../lib/arquivo.js'
 import { SEM_EMPRESA } from '../lib/modelo.js'
 import { APP_VERSION, dataBuildFormatada } from '../lib/versao.js'
 import MultiSelect from './MultiSelect.jsx'
+import CenarioSelector from './CenarioSelector.jsx'
 
 // Filtro da toolbar: MultiSelect compacto com ícone e prefixo
 function FiltroMultiSelect({ rotulo, valoresSelecionados, opcoes, onChange, rotuloTodos, formatar, corDe }) {
@@ -72,6 +75,16 @@ export default function Toolbar({
   pessoaIsolada = null,
   onLimparPessoaIsolada,
   onAbrirTour,
+  cenarios = [],
+  cenarioAtivo,
+  cenarioAtivoId,
+  onSelecionarCenario,
+  onAbrirNovoCenario,
+  onAbrirRenomearCenario,
+  onDuplicarCenario,
+  onExcluirCenario,
+  modoVisao = 'canvas',
+  onChangeModoVisao = () => {},
 }) {
   const inputArquivo = useRef(null)
   const [erroImport, setErroImport] = useState('')
@@ -97,12 +110,12 @@ export default function Toolbar({
     const leitor = new FileReader()
     leitor.onerror = () => setErroImport('Não foi possível ler o arquivo escolhido.')
     leitor.onload = () => {
-      const { dados: novos, erro } = validarImportacao(leitor.result)
-      if (erro) {
-        setErroImport(erro)
+      const resultado = validarImportacao(leitor.result)
+      if (resultado.erro) {
+        setErroImport(resultado.erro)
       } else {
         setErroImport('')
-        onImportar(novos)
+        onImportar(resultado)
       }
     }
     leitor.readAsText(arquivo)
@@ -134,6 +147,18 @@ export default function Toolbar({
             </a>
           </span>
         </div>
+
+        {divisor}
+
+        <CenarioSelector
+          cenarios={cenarios}
+          cenarioAtivo={cenarioAtivo}
+          onSelecionarCenario={onSelecionarCenario}
+          onAbrirNovoCenario={onAbrirNovoCenario}
+          onAbrirRenomearCenario={onAbrirRenomearCenario}
+          onDuplicarCenario={onDuplicarCenario}
+          onExcluirCenario={onExcluirCenario}
+        />
 
         {divisor}
 
@@ -245,6 +270,53 @@ export default function Toolbar({
 
         <div className="flex-1" />
 
+        {/* Seletor de Modo de Visualização */}
+        <div className="flex items-center rounded-xl bg-slate-100 p-0.5 border border-slate-200 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => onChangeModoVisao('canvas')}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              modoVisao === 'canvas'
+                ? 'bg-white text-brand-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Visão Organograma (Canvas de Árvore)"
+          >
+            <Network className="h-3.5 w-3.5 text-brand-600" />
+            <span className="hidden sm:inline">Organograma</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeModoVisao('tabela')}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              modoVisao === 'tabela'
+                ? 'bg-white text-brand-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Visão Tabela (Diretório pesquisável e Excel)"
+          >
+            <Table className="h-3.5 w-3.5 text-brand-600" />
+            <span className="hidden sm:inline">Tabela</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeModoVisao('cartoes')}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              modoVisao === 'cartoes'
+                ? 'bg-white text-brand-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Visão Cartões (Agrupado por Departamento)"
+          >
+            <Contact className="h-3.5 w-3.5 text-brand-600" />
+            <span className="hidden sm:inline">Cartões</span>
+          </button>
+        </div>
+
+        {divisor}
+
         <div className="flex shrink-0 items-center gap-2">
           <button
             data-tour="adicionar"
@@ -297,7 +369,11 @@ export default function Toolbar({
           {divisor}
 
           <span data-tour="arquivo" className="flex items-center gap-2">
-            <button onClick={() => exportarJson(dados)} className={iconeBotao} title="Exportar JSON">
+            <button
+              onClick={() => exportarJson({ cenarios, cenarioAtivoId, dados })}
+              className={iconeBotao}
+              title="Exportar backup completo (JSON com todos os organogramas)"
+            >
               <Upload size={18} />
             </button>
             <button

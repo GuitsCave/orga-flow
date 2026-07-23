@@ -8,7 +8,7 @@ import {
   useEdgesState,
   useReactFlow,
 } from '@xyflow/react'
-import { GitFork, Target, ArrowLeft, ArrowRight, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown } from 'lucide-react'
+import { GitFork, Target, ArrowLeft, ArrowRight, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Copy } from 'lucide-react'
 import PessoaNode, { corDoNivel } from './PessoaNode.jsx'
 import { paraFluxo } from '../lib/layout.js'
 
@@ -28,6 +28,7 @@ export default function OrgCanvas({
   onReordenar,
   onAlterarNivelBloco,
   onAlterarNivelEquipe,
+  onAbrirCopiarBloco,
 }) {
   const empresasPorId = useMemo(() => new Map(empresas.map((e) => [e.id, e])), [empresas])
 
@@ -42,9 +43,9 @@ export default function OrgCanvas({
     () =>
       nodesPosicionados.map((n) => ({
         ...n,
-        data: { ...n.data, onAddSubordinado, empresasPorId, mostrarEtiquetasEmpresa },
+        data: { ...n.data, onAddSubordinado, empresas, empresasPorId, mostrarEtiquetasEmpresa },
       })),
-    [nodesPosicionados, onAddSubordinado, empresasPorId, mostrarEtiquetasEmpresa],
+    [nodesPosicionados, onAddSubordinado, empresas, empresasPorId, mostrarEtiquetasEmpresa],
   )
 
   // Assinatura de QUAIS blocos estão na tela. O reenquadre automático depende
@@ -282,6 +283,24 @@ export default function OrgCanvas({
               >
                 <ChevronsDown size={14} className="text-slate-400" />
                 Descer
+              </button>
+            </>
+          )}
+
+          {/* Copiar para outro organograma */}
+          {onAbrirCopiarBloco && (
+            <>
+              <div className="my-1 border-t border-slate-100" />
+              <button
+                onClick={() => {
+                  onAbrirCopiarBloco(pessoaContexto)
+                  setMenuContexto(null)
+                }}
+                className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-xs font-semibold text-brand-700 hover:bg-brand-50 hover:text-brand-900 cursor-pointer transition-colors"
+                title="Copiar este bloco ou equipe para outro organograma"
+              >
+                <Copy size={14} className="text-brand-600" />
+                Copiar para outro organograma...
               </button>
             </>
           )}

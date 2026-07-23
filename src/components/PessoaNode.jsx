@@ -20,11 +20,13 @@ function PessoaNode({ data, selected }) {
   const cor = corDoNivel(p.nivel)
   const badge = [p.area, p.setor].filter(Boolean).join(' · ')
 
-  // Etiquetas de empresa: só quando o toggle está ligado e há vínculo
-  const etiquetas =
-    data.mostrarEtiquetasEmpresa && data.empresasPorId
-      ? (p.empresaIds ?? []).map((id) => data.empresasPorId.get(id)).filter(Boolean)
-      : []
+  // Etiquetas de empresa: respeita rigorosamente a ordem global definida no cadastro
+  const empresaIdsSet = new Set(p.empresaIds ?? [])
+  const etiquetas = data.mostrarEtiquetasEmpresa
+    ? data.empresas && data.empresas.length > 0
+      ? data.empresas.filter((e) => empresaIdsSet.has(e.id))
+      : (p.empresaIds ?? []).map((id) => data.empresasPorId?.get(id)).filter(Boolean)
+    : []
 
   return (
     <div
