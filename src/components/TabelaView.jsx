@@ -157,8 +157,13 @@ export default function TabelaView({
         </div>
       </div>
 
-      {/* Tabela de Pessoas */}
-      <div className="flex-1 overflow-auto rounded-2xl border border-slate-200 shadow-xs">
+      {/* Tabela de Pessoas.
+          overflow-hidden fica no wrapper arredondado; quem rola de verdade é o
+          div interno (sem raio de borda) — senão a barra de rolagem nativa,
+          que é sempre reta, corta o canto arredondado e fica com aparência
+          torta bem no canto onde ela aparece. */}
+      <div className="flex-1 overflow-hidden rounded-2xl border border-slate-200 shadow-xs">
+        <div className="h-full overflow-auto">
         <table className="w-full border-collapse text-left text-xs text-slate-700">
           <thead className="sticky top-0 z-10 bg-slate-100/90 backdrop-blur-xs text-[11px] font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
             <tr>
@@ -366,6 +371,7 @@ export default function TabelaView({
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )
