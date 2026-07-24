@@ -263,6 +263,9 @@ export default function SideDrawer({
             Orga v{APP_VERSION}
             {dataBuild && <span className="text-slate-400">· {dataBuild}</span>}
           </span>
+          <p className="mt-1 text-[10px] font-medium text-slate-400">
+            desenvolvido por Luiz Guilherme Batista
+          </p>
         </div>
       </aside>
     </div>
