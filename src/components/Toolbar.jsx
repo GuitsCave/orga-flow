@@ -214,7 +214,10 @@ export default function Toolbar({
         )}
 
         {/* Zona central — modos de visão */}
-        <div className="mx-auto flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shadow-inner">
+        <div
+          data-tour="visao"
+          className="mx-auto flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5 shadow-inner"
+        >
           {modos.map((m) => {
             const Icone = m.icone
             const ativo = modoVisao === m.id
@@ -246,6 +249,7 @@ export default function Toolbar({
           </button>
 
           <button
+            data-tour="buscar"
             onClick={onAbrirPaleta}
             className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white/60 px-2.5 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             title="Buscar pessoas e comandos"
@@ -267,6 +271,7 @@ export default function Toolbar({
           </button>
 
           <button
+            data-tour="confidencial"
             onClick={onToggleConfidencial}
             className={`rounded-lg p-2 transition-colors ${
               modoConfidencial

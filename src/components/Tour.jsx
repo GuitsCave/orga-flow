@@ -16,6 +16,12 @@ export const PASSOS = [
       'Aqui você monta o organograma da sua empresa. Um tour rápido mostrando o essencial. Você pode sair quando quiser e reabrir depois pelo menu “☰”.',
   },
   {
+    alvo: 'cenarios',
+    titulo: 'Cenários',
+    texto:
+      'Você pode ter mais de um organograma — a estrutura atual, uma proposta de reestruturação, um cenário por projeto. Crie, duplique ou copie um bloco de um cenário para outro por aqui.',
+  },
+  {
     alvo: 'grupo',
     titulo: 'Nome do grupo',
     texto: 'Clique aqui para dar nome ao seu grupo ou empresa. Ele é salvo sozinho.',
@@ -33,6 +39,24 @@ export const PASSOS = [
       'Clique em um bloco para editá-lo. Ao passar o mouse sobre um gestor, aparece um botão “+” embaixo dele que já cria um subordinado com o gestor e o nível preenchidos.',
   },
   {
+    alvo: 'visao',
+    titulo: 'Outras visões',
+    texto:
+      'Além do organograma em árvore, dá para ver os mesmos cargos como uma Tabela (ordenável, exporta CSV) ou como Cartões agrupados por área.',
+  },
+  {
+    alvo: 'buscar',
+    titulo: 'Busca e atalhos',
+    texto:
+      'Ctrl+K abre uma busca rápida por pessoa ou comando — de qualquer lugar da tela. Ao lado, o botão de Modo Foco (tecla F) esconde toda a interface para apresentar só o organograma numa reunião.',
+  },
+  {
+    alvo: 'confidencial',
+    titulo: 'Modo confidencial',
+    texto:
+      'Vai apresentar para um consultor ou terceiro? Esse botão troca todos os nomes por “Colaborador 1”, “Colaborador 2”... mantendo cargo, área e hierarquia visíveis. É só para a tela — nada é alterado nos dados.',
+  },
+  {
     alvo: 'filtros',
     titulo: 'Filtros',
     texto:
@@ -42,12 +66,12 @@ export const PASSOS = [
     alvo: 'menu',
     titulo: 'Menu e configurações',
     texto:
-      'Aqui ficam o cadastro de empresas (cada uma com sua cor), o backup dos dados (exportar/importar JSON), o layout automático ou manual e este passo a passo. Tudo é salvo apenas neste navegador — exporte de tempos em tempos.',
+      'Aqui ficam o cadastro de empresas (cada uma com sua cor), o backup dos dados (exportar/importar JSON), exportar o organograma como imagem PNG, o layout automático ou manual e este passo a passo. Os dados ficam salvos só neste navegador — exporte de tempos em tempos.',
   },
   {
     titulo: 'Tudo pronto!',
     texto:
-      'É só começar a cadastrar. Se precisar rever este passo a passo, clique no botão “?” no topo da tela.',
+      'É só começar a cadastrar. Se precisar rever este passo a passo, abra o menu “☰” e clique em “Passo a passo”.',
   },
 ]
 

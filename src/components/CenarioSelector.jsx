@@ -35,7 +35,7 @@ export default function CenarioSelector({
   }, [])
 
   return (
-    <div className="relative shrink-0" ref={menuRef}>
+    <div data-tour="cenarios" className="relative shrink-0" ref={menuRef}>
       {/* Botão Compacto do Seletor */}
       <button
         type="button"
