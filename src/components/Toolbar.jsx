@@ -11,7 +11,6 @@ import {
   Pencil,
   Plus,
   Search,
-  SlidersHorizontal,
   Table,
   Tag,
   VenetianMask,
@@ -21,7 +20,10 @@ import { SEM_EMPRESA } from '../lib/modelo.js'
 import MultiSelect from './MultiSelect.jsx'
 import CenarioSelector from './CenarioSelector.jsx'
 
-// Filtro da toolbar: MultiSelect compacto com ícone e prefixo
+// Filtro da toolbar: MultiSelect compacto com prefixo. Sem ícone — os 5
+// filtros usavam o mesmo ícone genérico, que não diferenciava nada e só
+// ocupava espaço (relevante na faixa estreita: 5 filtros + headcount + toggle
+// disputando a mesma linha).
 function FiltroMultiSelect({ rotulo, valoresSelecionados, opcoes, onChange, rotuloTodos, formatar, corDe }) {
   return (
     <MultiSelect
@@ -33,7 +35,6 @@ function FiltroMultiSelect({ rotulo, valoresSelecionados, opcoes, onChange, rotu
       titulo={`Filtrar ${rotulo.toLowerCase()}`}
       rotuloVazio={rotuloTodos}
       prefixo={rotulo}
-      icone={<SlidersHorizontal size={16} />}
     />
   )
 }
@@ -295,12 +296,15 @@ export default function Toolbar({
       </div>
 
       {/* Faixa de filtros e opções de visualização.
-          Duas linhas sempre separadas (não uma só que quebra ao acaso): os
-          filtros wrapam entre si na linha 1, e o headcount/etiquetas fica
-          sempre na linha 2 — evita o bloco "sobrar" sozinho, colado a um
-          filtro qualquer, quando a tela é estreita. */}
-      <div data-tour="filtros" className={`${cartao} relative z-10 flex flex-col gap-2 px-3 py-2`}>
-        <div className="flex flex-wrap items-center gap-2">
+          Duas colunas, não uma linha só: a esquerda (filtros) é a única que
+          wrapa internamente quando falta espaço; a direita (headcount +
+          etiquetas) fica fixa no topo. Sem isso, o bloco da direita (antes
+          empurrado por ml-auto numa única flex-wrap) podia "sobrar" colado a
+          um filtro solto na última linha, com um vão feio no meio — e virar
+          duas linhas sempre (a alternativa mais simples) desperdiça espaço
+          vertical à toa quando os filtros cabem numa linha só. */}
+      <div data-tour="filtros" className={`${cartao} relative z-10 flex items-start gap-3 px-3 py-2`}>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
           <Filter size={13} /> Filtros
         </span>
@@ -384,10 +388,11 @@ export default function Toolbar({
         )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-2">
-          {/* Headcount */}
+        <div className="flex shrink-0 items-center gap-3">
+          {/* Headcount: some no espaço junto com o toggle antes de cair pra
+              baixo, para o texto não espremer contra os filtros. */}
           {totalCargos > 0 && (
-            <div className="flex items-center gap-2 border-r border-slate-200 pr-3 lg:gap-3">
+            <div className="hidden items-center gap-2 border-r border-slate-200 pr-3 sm:flex lg:gap-3">
               <Metrica
                 rotulo="Cargos"
                 valor={mostra(visiveisCargos, totalCargos)}
@@ -427,7 +432,7 @@ export default function Toolbar({
             >
               {mostrarEtiquetasEmpresa ? <Eye size={16} /> : <EyeOff size={16} />}
               <Tag size={13} />
-              <span className="hidden lg:inline">Etiquetas de Empresa</span>
+              <span className="hidden 2xl:inline">Etiquetas de Empresa</span>
             </button>
           )}
         </div>
