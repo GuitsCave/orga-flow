@@ -205,7 +205,7 @@ export default function TabelaView({
               </th>
               <th className="px-4 py-3">Gestor Direto</th>
               <th className="px-4 py-3">Empresas</th>
-              <th className="px-4 py-3 text-right">Ações</th>
+              <th className="px-4 py-3 text-center">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-medium">
@@ -312,7 +312,7 @@ export default function TabelaView({
                     </td>
 
                     {/* Ações */}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-center">
                       {confirmandoId === p.id ? (
                         (() => {
                           const nSub = todasPessoas.filter((s) => s.gestorId === p.id).length
@@ -340,7 +340,7 @@ export default function TabelaView({
                           )
                         })()
                       ) : (
-                        <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => onAddSubordinado(p.id)}
                             className="rounded-lg p-1.5 text-slate-500 hover:bg-brand-50 hover:text-brand-600 transition-colors"
