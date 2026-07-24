@@ -199,8 +199,8 @@ export default function Tour({ onFechar }) {
 
         <p className="text-sm leading-snug text-slate-600">{passo.texto}</p>
 
-        <div className="mt-4 flex items-center gap-2">
-          <div className="flex gap-1">
+        <div className="mt-4 space-y-2">
+          <div className="flex flex-wrap justify-center gap-1">
             {PASSOS.map((_, i) => (
               <span
                 key={i}
@@ -212,7 +212,7 @@ export default function Tour({ onFechar }) {
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2">
             {indice > 0 && (
               <button
                 onClick={voltar}
@@ -223,7 +223,7 @@ export default function Tour({ onFechar }) {
             )}
             <button
               onClick={() => (ultimo ? onFechar() : avancar())}
-              className="flex items-center gap-1 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
+              className="ml-auto flex items-center gap-1 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
               {ultimo ? (
                 <>
