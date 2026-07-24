@@ -168,6 +168,12 @@ export function paraFluxo(pessoas, layoutManual, todasPessoas = []) {
         source: p.gestorId,
         target: p.id,
         type: 'smoothstep',
+        // Cor igual ao padrão do React Flow (não muda o visual em tela) — mas
+        // *inline*, não via classe CSS: a exportação de imagem clona cada
+        // <svg> de aresta nativamente (sem reprocessar estilos) e não carrega
+        // a folha de estilo externa, então uma aresta sem style próprio saía
+        // sem nenhuma cor na imagem exportada, mesmo aparecendo normal na tela.
+        style: { stroke: '#b1b1b7' },
       })
     } else {
       // Subir na árvore (lista completa) para achar o gestor visível mais próximo

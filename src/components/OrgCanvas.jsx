@@ -74,7 +74,13 @@ export default function OrgCanvas({
   // está vendo. Reflete o que a tela mostra no momento — filtros, bloco
   // isolado e nomes mascarados pelo modo confidencial já vêm prontos nos nós.
   const exportarComoImagem = useCallback(async () => {
-    const nosAtuais = getNodes()
+    // getNodes() lê o estado interno do React Flow, que só é resincronizado
+    // com `pessoas` (o filtro atual) dentro do useEffect abaixo — depois do
+    // render, não durante. Cruza com os ids de `pessoas` (sempre atual, é a
+    // prop) para nunca exportar um nó que já saiu do filtro mas ainda não foi
+    // removido da store interna.
+    const idsVisiveis = new Set(pessoas.map((p) => p.id))
+    const nosAtuais = getNodes().filter((n) => idsVisiveis.has(n.id))
     if (nosAtuais.length === 0) return
 
     const bounds = getNodesBounds(nosAtuais)
@@ -104,7 +110,7 @@ export default function OrgCanvas({
     a.download = `organograma_${new Date().toISOString().slice(0, 10)}.png`
     a.href = dataUrl
     a.click()
-  }, [getNodes])
+  }, [getNodes, pessoas])
 
   // Registra a função no App enquanto o canvas existe; some quando o usuário
   // troca para Tabela/Cartões (ReactFlowProvider desmonta junto).
