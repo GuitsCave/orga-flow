@@ -1,14 +1,35 @@
 export const NODE_WIDTH = 240
-export const NODE_HEIGHT = 96
 const NODE_GAP_X = 40 // espaço mínimo horizontal entre blocos da mesma linha
-// Espaço vertical reservado abaixo de cada linha de níveis. NODE_HEIGHT é só o
-// card "básico" (nome + cargo); com etiquetas de empresa e os 5 linhas de
-// descrição no máximo, o card real chega a ~166px — quase o dobro. Um
-// ROW_GAP_Y pequeno (proporcionado pro card básico) deixava o card mais alto
-// praticamente colado no de baixo. Folga generosa aqui para caber o caso mais
-// alto com espaço de sobra, já que a diferença de altura entre os cards varia
-// (depende de ter ou não descrição/etiquetas) e o layout não mede cada nó.
-const ROW_GAP_Y = 130 // espaço vertical entre linhas de níveis
+const ESPACO_ENTRE_NIVEIS = 50 // folga fixa abaixo do card mais alto de cada linha
+
+// Alturas do card em PessoaNode.jsx, MEDIDAS no navegador (getBoundingClientRect
+// de cada parte, corrigido pelo zoom do canvas) — não são um chute de CSS.
+// Servem pra estimar a altura de cada card sem precisar medir o DOM de
+// verdade: cada linha de níveis usa só o espaço que o card mais alto dela
+// precisa, então uma linha sem descrição fica compacta (como antes) e só
+// cresce onde algum bloco realmente tem mais conteúdo. Se o card em
+// PessoaNode.jsx mudar (fonte, padding, o que aparece), remeça essas
+// constantes — abra um card com badge + etiquetas + 5 linhas de descrição e
+// confira via devtools (cuidado com o zoom do canvas, ele escala o
+// getBoundingClientRect).
+const ALTURA_CARD_BASE = 61 // padding + borda + linha do nome + linha do cargo
+const ALTURA_BADGE = 21 // linha de Área/Setor, quando presente
+const ALTURA_ETIQUETAS = 25 // uma linha de etiquetas de empresa
+const ALTURA_POR_LINHA_DESC = 15 // cada linha da descrição (leading-snug, 11px)
+const MARGEM_DESC = 4 // espaço antes da descrição, quando presente
+
+/** Estima a altura real do card no canvas a partir do que ele vai exibir. */
+function alturaEstimadaDoCard(p) {
+  let altura = ALTURA_CARD_BASE
+  if (p.area || p.setor) altura += ALTURA_BADGE
+  const nEmpresas = (p.empresaIds ?? []).length
+  if (nEmpresas > 0) altura += ALTURA_ETIQUETAS * (nEmpresas > 2 ? 2 : 1)
+  if (p.descricao) {
+    const linhas = Math.min(p.descricao.split('\n').length, 5)
+    altura += MARGEM_DESC + linhas * ALTURA_POR_LINHA_DESC
+  }
+  return altura
+}
 
 export function calcularLayout(pessoas, todasPessoas = []) {
   if (pessoas.length === 0) return {}
@@ -53,10 +74,22 @@ export function calcularLayout(pessoas, todasPessoas = []) {
 
   // Obter níveis únicos presentes
   const niveis = [...new Set(pessoas.map((p) => p.nivel))].sort((a, b) => a - b)
+
+  // Altura de cada linha = a do card mais alto presente nela — só cresce onde
+  // algum bloco realmente precisa (descrição, etiquetas), sem inflar as
+  // linhas vizinhas que não têm nada disso.
+  const alturaMaximaPorNivel = {}
+  for (const p of pessoas) {
+    const altura = alturaEstimadaDoCard(p)
+    alturaMaximaPorNivel[p.nivel] = Math.max(alturaMaximaPorNivel[p.nivel] ?? 0, altura)
+  }
+
   const linhaDoNivel = {}
-  niveis.forEach((n, i) => {
-    linhaDoNivel[n] = i * (NODE_HEIGHT + ROW_GAP_Y)
-  })
+  let yAcumulado = 0
+  for (const n of niveis) {
+    linhaDoNivel[n] = yAcumulado
+    yAcumulado += alturaMaximaPorNivel[n] + ESPACO_ENTRE_NIVEIS
+  }
 
   // Função recursiva para calcular o layout de um nó
   // Retorna { x, width, subposicoes: { id: x } }
