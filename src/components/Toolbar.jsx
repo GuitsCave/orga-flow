@@ -294,11 +294,13 @@ export default function Toolbar({
         </div>
       </div>
 
-      {/* Faixa de filtros e opções de visualização */}
-      <div
-        data-tour="filtros"
-        className={`${cartao} relative z-10 flex flex-wrap items-center gap-2 px-3 py-2`}
-      >
+      {/* Faixa de filtros e opções de visualização.
+          Duas linhas sempre separadas (não uma só que quebra ao acaso): os
+          filtros wrapam entre si na linha 1, e o headcount/etiquetas fica
+          sempre na linha 2 — evita o bloco "sobrar" sozinho, colado a um
+          filtro qualquer, quando a tela é estreita. */}
+      <div data-tour="filtros" className={`${cartao} relative z-10 flex flex-col gap-2 px-3 py-2`}>
+        <div className="flex flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
           <Filter size={13} /> Filtros
         </span>
@@ -380,11 +382,12 @@ export default function Toolbar({
             <X size={14} /> Limpar ({filtrosAtivos})
           </button>
         )}
+        </div>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 pt-2">
           {/* Headcount */}
           {totalCargos > 0 && (
-            <div className="hidden items-center gap-2 border-r border-slate-200 pr-3 md:flex lg:gap-3">
+            <div className="flex items-center gap-2 border-r border-slate-200 pr-3 lg:gap-3">
               <Metrica
                 rotulo="Cargos"
                 valor={mostra(visiveisCargos, totalCargos)}
