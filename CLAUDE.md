@@ -85,6 +85,8 @@ Auto layout is hand-rolled in `calcularLayout` — there is no layout library. `
 
 That recursion produces **X only**. Y comes from each person's `nivel`, so everyone at the same level shares a row even when the manager chain skips levels. Rows are keyed by the sorted distinct `nivel` values present, so an entirely absent level collapses instead of leaving a blank row. A final pass gives a position to any node the recursion never reached (only possible if the hierarchy contains a cycle), so React Flow never receives `position: undefined`.
 
+Row spacing (`ROW_GAP_Y` in `layout.js`) is **not** measured per node — it's a fixed gap added on top of `NODE_HEIGHT`, the "basic" card height (name + cargo only). A card grows well past that with company tags and a full 5-line `descricao` (`line-clamp-5` in `PessoaNode`) — close to double, in practice. `ROW_GAP_Y` is sized with that worst case in mind so a tall card never crowds the row below it; if you touch this constant, re-check it against a node with the maximum description and multiple company tags, not just the empty-card case.
+
 Manual mode (`layoutManual: true`) uses each person's saved `posicao` and makes nodes draggable.
 
 ### View filters and hidden-ancestor edges

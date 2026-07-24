@@ -1,7 +1,14 @@
 export const NODE_WIDTH = 240
 export const NODE_HEIGHT = 96
 const NODE_GAP_X = 40 // espaço mínimo horizontal entre blocos da mesma linha
-const ROW_GAP_Y = 70 // espaço vertical entre linhas de níveis
+// Espaço vertical reservado abaixo de cada linha de níveis. NODE_HEIGHT é só o
+// card "básico" (nome + cargo); com etiquetas de empresa e os 5 linhas de
+// descrição no máximo, o card real chega a ~166px — quase o dobro. Um
+// ROW_GAP_Y pequeno (proporcionado pro card básico) deixava o card mais alto
+// praticamente colado no de baixo. Folga generosa aqui para caber o caso mais
+// alto com espaço de sobra, já que a diferença de altura entre os cards varia
+// (depende de ter ou não descrição/etiquetas) e o layout não mede cada nó.
+const ROW_GAP_Y = 130 // espaço vertical entre linhas de níveis
 
 export function calcularLayout(pessoas, todasPessoas = []) {
   if (pessoas.length === 0) return {}
