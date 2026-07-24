@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ReactFlow,
   Background,
@@ -7,10 +7,16 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
+  getNodesBounds,
+  getViewportForBounds,
 } from '@xyflow/react'
+import { toPng } from 'html-to-image'
 import { GitFork, Target, ArrowLeft, ArrowRight, ChevronUp, ChevronDown, ChevronsUp, ChevronsDown, Copy } from 'lucide-react'
 import PessoaNode, { corDoNivel } from './PessoaNode.jsx'
 import { paraFluxo } from '../lib/layout.js'
+
+// Margem ao redor da árvore inteira na imagem exportada
+const MARGEM_EXPORTACAO = 48
 
 const nodeTypes = { pessoa: PessoaNode }
 
@@ -29,6 +35,7 @@ export default function OrgCanvas({
   onAlterarNivelBloco,
   onAlterarNivelEquipe,
   onAbrirCopiarBloco,
+  aoRegistrarExportacaoImagem,
 }) {
   const empresasPorId = useMemo(() => new Map(empresas.map((e) => [e.id, e])), [empresas])
 
@@ -58,8 +65,53 @@ export default function OrgCanvas({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(nodesCalc)
   const [edges, setEdges, onEdgesChange] = useEdgesState(edgesCalc)
-  const { fitView } = useReactFlow()
+  const { fitView, getNodes } = useReactFlow()
   const [menuContexto, setMenuContexto] = useState(null)
+
+  // Exporta a árvore inteira (não só o que está enquadrado na tela) como PNG:
+  // calcula o enquadramento que caberia todos os nós e aplica isso só na
+  // imagem exportada via html-to-image, sem mexer no zoom/pan que o usuário
+  // está vendo. Reflete o que a tela mostra no momento — filtros, bloco
+  // isolado e nomes mascarados pelo modo confidencial já vêm prontos nos nós.
+  const exportarComoImagem = useCallback(async () => {
+    const nosAtuais = getNodes()
+    if (nosAtuais.length === 0) return
+
+    const bounds = getNodesBounds(nosAtuais)
+    const largura = bounds.width + MARGEM_EXPORTACAO * 2
+    const altura = bounds.height + MARGEM_EXPORTACAO * 2
+    // getViewportForBounds trata um padding numérico como FRAÇÃO do tamanho da
+    // imagem (0.1 = 10%), não pixels — precisa da string "Npx" para pixels
+    // absolutos, senão o zoom calculado sai completamente errado.
+    const viewport = getViewportForBounds(bounds, largura, altura, 0.1, 2, `${MARGEM_EXPORTACAO}px`)
+
+    const elementoViewport = document.querySelector('.react-flow__viewport')
+    if (!elementoViewport) return
+
+    const dataUrl = await toPng(elementoViewport, {
+      backgroundColor: '#f8fafc',
+      width: largura,
+      height: altura,
+      pixelRatio: 2,
+      style: {
+        width: `${largura}px`,
+        height: `${altura}px`,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+      },
+    })
+
+    const a = document.createElement('a')
+    a.download = `organograma_${new Date().toISOString().slice(0, 10)}.png`
+    a.href = dataUrl
+    a.click()
+  }, [getNodes])
+
+  // Registra a função no App enquanto o canvas existe; some quando o usuário
+  // troca para Tabela/Cartões (ReactFlowProvider desmonta junto).
+  useEffect(() => {
+    aoRegistrarExportacaoImagem?.(exportarComoImagem)
+    return () => aoRegistrarExportacaoImagem?.(null)
+  }, [exportarComoImagem, aoRegistrarExportacaoImagem])
 
   const pessoaContexto = menuContexto ? todasPessoas.find((p) => p.id === menuContexto.id) : null
   const irmaosContexto = pessoaContexto ? todasPessoas.filter((p) => p.gestorId === pessoaContexto.gestorId) : []

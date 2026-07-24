@@ -70,6 +70,12 @@ export default function App() {
   const [modalEmpresas, setModalEmpresas] = useState(false)
   const [paletaAberta, setPaletaAberta] = useState(false)
   const [drawerAberto, setDrawerAberto] = useState(false)
+  // Função de exportar PNG, registrada pelo OrgCanvas enquanto ele existe —
+  // null na visão Tabela/Cartões, onde não há canvas para exportar.
+  const [exportarImagem, setExportarImagem] = useState(null)
+  const registrarExportacaoImagem = useCallback((fn) => {
+    setExportarImagem(() => fn)
+  }, [])
   // Modo foco/apresentação: esconde toda a interface, só o canvas fica
   const [modoFoco, setModoFoco] = useState(false)
   // Modo confidencial: mascara nomes para reuniões com terceiros. View-only,
@@ -506,6 +512,7 @@ export default function App() {
                 onAlterarNivelBloco={alterarNivelBloco}
                 onAlterarNivelEquipe={alterarNivelEquipe}
                 onAbrirCopiarBloco={(p) => setModalCopiarBloco({ aberto: true, pessoa: p })}
+                aoRegistrarExportacaoImagem={registrarExportacaoImagem}
               />
             </ReactFlowProvider>
           )}
@@ -544,6 +551,7 @@ export default function App() {
           cenarioAtivoId={cenarioAtivoId}
           dados={dados}
           onImportar={aoImportar}
+          onExportarImagem={exportarImagem}
           onAbrirEmpresas={() => setModalEmpresas(true)}
           layoutManual={dados.layoutManual}
           onToggleManual={() => setLayoutManual(!dados.layoutManual)}

@@ -3,6 +3,7 @@ import {
   X,
   Upload,
   Download,
+  ImageDown,
   Building2,
   LayoutGrid,
   Move,
@@ -15,7 +16,7 @@ import { exportarJson, validarImportacao } from '../lib/arquivo.js'
 import { APP_VERSION, dataBuildFormatada } from '../lib/versao.js'
 
 /** Item de ação do drawer: ícone à esquerda, título + descrição opcional */
-function ItemDrawer({ icone: Icone, titulo, descricao, onClick, tom = 'padrao' }) {
+function ItemDrawer({ icone: Icone, titulo, descricao, onClick, tom = 'padrao', disabled = false }) {
   const tons = {
     padrao: 'text-slate-500 group-hover:text-brand-600',
     ativo: 'text-amber-600',
@@ -23,9 +24,11 @@ function ItemDrawer({ icone: Icone, titulo, descricao, onClick, tom = 'padrao' }
   return (
     <button
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
+      disabled={disabled}
+      title={disabled ? descricao : undefined}
+      className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
     >
-      <span className={`shrink-0 ${tons[tom]}`}>
+      <span className={`shrink-0 ${disabled ? 'text-slate-400' : tons[tom]}`}>
         <Icone className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
@@ -58,6 +61,7 @@ export default function SideDrawer({
   cenarioAtivoId,
   dados,
   onImportar,
+  onExportarImagem,
   onAbrirEmpresas,
   layoutManual,
   onToggleManual,
@@ -66,6 +70,21 @@ export default function SideDrawer({
 }) {
   const inputArquivo = useRef(null)
   const [erroImport, setErroImport] = useState('')
+  const [exportandoImagem, setExportandoImagem] = useState(false)
+  const [erroExportImagem, setErroExportImagem] = useState('')
+
+  async function aoExportarImagem() {
+    if (!onExportarImagem || exportandoImagem) return
+    setErroExportImagem('')
+    setExportandoImagem(true)
+    try {
+      await onExportarImagem()
+    } catch {
+      setErroExportImagem('Não foi possível gerar a imagem. Tente novamente.')
+    } finally {
+      setExportandoImagem(false)
+    }
+  }
 
   useEffect(() => {
     const aoTeclar = (e) => {
@@ -135,6 +154,22 @@ export default function SideDrawer({
             {erroImport && (
               <p className="mx-3 mt-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
                 Erro ao importar: {erroImport}
+              </p>
+            )}
+            <ItemDrawer
+              icone={ImageDown}
+              titulo={exportandoImagem ? 'Gerando imagem…' : 'Exportar imagem (PNG)'}
+              descricao={
+                onExportarImagem
+                  ? 'A árvore inteira, do jeito que está na tela — filtros e modo confidencial inclusos'
+                  : 'Disponível na visão Organograma'
+              }
+              disabled={!onExportarImagem || exportandoImagem}
+              onClick={aoExportarImagem}
+            />
+            {erroExportImagem && (
+              <p className="mx-3 mt-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                {erroExportImagem}
               </p>
             )}
             <input

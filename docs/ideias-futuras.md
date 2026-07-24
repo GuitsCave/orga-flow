@@ -21,15 +21,22 @@ expandido no duplo-clique do nó.
   depois vale mexer no `PessoaForm`/`PessoaNode`/cartões.
 - **Fonte:** seção 6 de [design-header-futuro.md](design-header-futuro.md).
 
-## Reconsiderar exportação estática (PDF/PNG) — 💭 EM ABERTO
+## Exportação estática (PDF/PNG) — ✅ PNG decidido e implementado
 
-O doc de redesign propõe **não ter** export estático, para forçar uso ao vivo em
-reunião. A ressalva: um comitê executivo tende a pedir o PNG para colar no slide,
-então a ausência pode virar **atrito**, não diferencial.
+O doc de redesign propunha **não ter** export estático, para forçar uso ao vivo em
+reunião — mas a ressalva se confirmou: a falta do PNG vira atrito (comitê pede
+pra colar no slide), não diferencial. Decisão: manter o Modo Foco como a via
+"apresentação ao vivo" e oferecer PNG como escape.
 
-- **Decisão pendente:** manter a tese "só ao vivo" ou oferecer um export simples
-  (PNG do canvas) como escape.
-- **Se formos implementar:** o Modo Foco (item 2 do plano) já entrega boa parte
-  do valor "apresentação" sem export; export de imagem pode ser um extra opcional
-  em vez de estratégia central.
+- **Implementado:** "Exportar imagem (PNG)" no `SideDrawer`, seção Arquivo,
+  junto ao "Exportar backup (JSON)". Exporta a árvore inteira (não só o que
+  está enquadrado na tela) via `getNodesBounds`/`getViewportForBounds` do
+  React Flow + `html-to-image`. Reflete exatamente o que está na tela no
+  momento — filtros, bloco isolado e nomes mascarados pelo Modo Confidencial
+  já vêm prontos nos nós, então a imagem sai coerente com o que o usuário viu
+  ao clicar. Só existe na visão Organograma (o botão fica desabilitado com
+  dica em Tabela/Cartões, onde não há canvas React Flow montado).
+- **PDF:** não implementado. Fica como próximo passo condicional — só faz
+  sentido se surgir pedido real de paginação/impressão formal; o PNG já cobre
+  o caso de uso principal ("colar no slide").
 - **Fonte:** seção 5 de [design-header-futuro.md](design-header-futuro.md).
