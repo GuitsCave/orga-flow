@@ -121,7 +121,7 @@ export default function Toolbar({
       {/* Dock flutuante — identidade, visão e ações.
           z-20 acima da faixa de filtros: senão o backdrop-blur dela (que cria um
           stacking context) cobriria o dropdown de cenários que abre para baixo. */}
-      <div className={`${cartao} relative z-20 flex items-center gap-3 px-3 py-2`}>
+      <div className={`${cartao} relative z-20 flex flex-wrap items-center gap-3 px-3 py-2`}>
         {/* Zona esquerda — identidade e contexto */}
         <div className="flex shrink-0 items-center gap-2 text-brand-900">
           <Network size={22} />
@@ -308,7 +308,10 @@ export default function Toolbar({
           um filtro solto na última linha, com um vão feio no meio — e virar
           duas linhas sempre (a alternativa mais simples) desperdiça espaço
           vertical à toa quando os filtros cabem numa linha só. */}
-      <div data-tour="filtros" className={`${cartao} relative z-10 flex items-start gap-3 px-3 py-2`}>
+      <div
+        data-tour="filtros"
+        className={`${cartao} relative z-10 flex flex-wrap items-start gap-3 px-3 py-2`}
+      >
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
           <Filter size={13} /> Filtros
