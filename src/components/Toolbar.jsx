@@ -119,9 +119,15 @@ export default function Toolbar({
   return (
     <header className="shrink-0 space-y-2 px-3 pt-3">
       {/* Dock flutuante — identidade, visão e ações.
-          z-20 acima da faixa de filtros: senão o backdrop-blur dela (que cria um
-          stacking context) cobriria o dropdown de cenários que abre para baixo. */}
-      <div className={`${cartao} relative z-20 flex flex-wrap items-center gap-3 px-3 py-2`}>
+          z-30 acima de tudo abaixo dele: da faixa de filtros (senão o
+          backdrop-blur dela, que cria um stacking context, cobriria o
+          dropdown de cenários) e do conteúdo principal (o cabeçalho fixo da
+          Tabela usa z-10 — sem essa ordem clara, dois z-index iguais em
+          galhos diferentes da árvore empatam, e quem vem depois no HTML
+          vence; como <main> vem depois do <header>, a Tabela cobriria os
+          dropdowns dos filtros mesmo eles tendo z-30 *dentro* do próprio
+          cartão). */}
+      <div className={`${cartao} relative z-30 flex flex-wrap items-center gap-3 px-3 py-2`}>
         {/* Zona esquerda — identidade e contexto */}
         <div className="flex shrink-0 items-center gap-2 text-brand-900">
           <Network size={22} />
@@ -310,7 +316,7 @@ export default function Toolbar({
           vertical à toa quando os filtros cabem numa linha só. */}
       <div
         data-tour="filtros"
-        className={`${cartao} relative z-10 flex flex-wrap items-start gap-3 px-3 py-2`}
+        className={`${cartao} relative z-20 flex flex-wrap items-start gap-3 px-3 py-2`}
       >
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
