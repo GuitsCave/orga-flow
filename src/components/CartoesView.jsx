@@ -79,7 +79,7 @@ export default function CartoesView({
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-50 p-4 md:p-6 overflow-hidden">
+    <div className="flex h-full flex-col bg-white p-4 md:p-6 overflow-hidden">
       {/* Barra de Busca Topo */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="relative flex-1 max-w-md">
@@ -89,7 +89,7 @@ export default function CartoesView({
             placeholder="Pesquisar departamento, cargo ou nome..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs font-medium text-slate-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 shadow-2xs transition-all"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2 text-xs font-medium text-slate-800 outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 transition-all"
           />
         </div>
 

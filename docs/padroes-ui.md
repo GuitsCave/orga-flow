@@ -124,6 +124,36 @@ Passo a passo com máscara escurecendo a tela e recorte iluminando o elemento da
 > ⚠️ Acoplamento a vigiar: mover ou renomear um elemento destacado sem atualizar o `data-tour`
 > faz o passo **sumir silenciosamente**, sem erro nenhum.
 
+## Campo aurora e motion no dock
+
+O dock e a faixa de filtros (`Toolbar.jsx`) ficam sobre um campo "aurora": blobs radiais bem
+difusos (`blur-3xl`, opacidade baixa) nas próprias cores `--color-nivel-1..6` do organograma,
+posicionados em um `<div>` **irmão** dos dois cartões (não ancestral), com `overflow-hidden` só
+nesse irmão. Isso é o que permite recortar os blobs sem qualquer risco de cortar o dropdown do
+`CenarioSelector`, que vive dentro do cartão do dock — um ancestral com `overflow-hidden` cortaria
+esse menu assim que ele ultrapassasse a borda do cartão (já aconteceu numa tentativa anterior com
+uma barra de acento; por isso o cuidado de nunca sobrepor `overflow-hidden` a um ancestral que
+hospeda um dropdown). Os keyframes de drift (`animate-aurora-1/2/3`) são tokens `--animate-*` em
+`index.css`, seguindo o mesmo padrão dos tokens de cor.
+
+Entrada em cascata via `motion/react`: o dock e a faixa de filtros são `motion.div` com
+`variants` — cada zona do dock (logo, cenários, nome do grupo, seletor de visão, ações) é um filho
+direto que a `staggerChildren` do pai acende em sequência; a faixa de filtros entra depois, como um
+bloco só (não teria sentido fazer stagger por filtro, já que a lista de filtros visíveis muda
+conforme os dados). Tudo desliga com `useReducedMotion()` — nesse caso o campo aurora nem chega a
+renderizar, e os `motion.div` recebem `initial={false}` (sem estado "oculto" para animar a partir).
+
+A pílula do seletor de visão usa `layoutId` compartilhado: só o botão ativo a renderiza, então
+trocar de aba anima o mesmo elemento deslizando (FLIP) em vez de um aceso/apagado instantâneo — é
+motion com propósito (comunica a troca de estado), não decoração solta. Botões de ação levam
+`whileHover`/`whileTap` sutis (leve elevação + escala), e o botão de menu tem um SVG próprio
+(`IconeMenu`, não o ícone genérico do lucide) cujas linhas se abrem no hover — o ícone padrão não
+dá esse gancho por linha individual.
+
+> ⚠️ Não reintroduzir uma segunda família tipográfica no dock — já foi tentado (Space Grotesk só
+> no wordmark) e não colou visualmente com o resto da interface. O dock inteiro usa a mesma
+> `--font-sans` (Inter) do resto do app.
+
 ## Estados vazios
 
 Toda área que pode ficar sem conteúdo tem um estado vazio com ícone, explicação e o caminho para
